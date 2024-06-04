@@ -1,0 +1,28 @@
+[package]
+name = "agentic"
+version = "0.0.1"
+edition = "2021"
+rust-version = "1.78"
+license = "MIT OR Apache-2.0"
+description = "Agent flow types and executor library (uses genai)"
+keywords = [
+	"generative-ai",
+	"agent",
+	"openai",
+	"llama",
+	"ollama"
+]
+homepage = "https://github.com/jeremychone/rust-agentic"
+repository = "https://github.com/jeremychone/rust-agentic"
+
+[lints.rust]
+unsafe_code = "forbid"
+unused = { level = "allow", priority = -1 } # For exploratory dev.
+
+[dependencies]
+# -- Json
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_with = { version = "3", features = ["macros"] }
+# -- Others
+derive_more = { version = "1.0.0-beta", features = ["from"] }
