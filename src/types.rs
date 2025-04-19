@@ -22,7 +22,7 @@ pub struct Tools {}
 
 #[derive(Debug, Clone)]
 pub struct Tool {
-	kind: TookKind,
+	kind: ToolKind, // Renamed from TookKind
 	name: String,
 	instruction: Option<String>,
 	description: Option<String>,
@@ -30,7 +30,7 @@ pub struct Tool {
 }
 
 #[derive(Debug, Clone)]
-pub enum TookKind {
+pub enum ToolKind { // Renamed from TookKind
 	Function,
 }
 
@@ -54,3 +54,4 @@ pub enum TemplateKind {
 }
 
 // endregion: --- Template
+

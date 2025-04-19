@@ -1,4 +1,4 @@
-# Agentic - library to structure and execute agent flow in Rust.
+# Agentic - MCP and A2A Support Library in Rust
 
 <div align="center">
 
@@ -11,8 +11,10 @@
 
 </div>
 
+**EXPERIMENTAL**: This is an experimental library at this point, but the goal is to become a support library for implementing MCP and Agent-to-Agent Services and Clients.
 
+The current objectives are:
 
-**NOTE**: At present, only the initial types are available to give an idea of the direction. While these may not be particularly useful, development is expected to progress rapidly.
+- `agentic::mcp` provides types to support the MCP Client and Server Protocols.
 
-Agentic will utilize the [genai](https://crates.io/crates/genai) library to connect with various Generative AI Providers, including OpenAI, Ollama, Anthropic, and others.
+- `agentic::a2a` (coming later) provides types to support the A2A Client and Server Protocols.

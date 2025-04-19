@@ -1,8 +1,8 @@
 [package]
 name = "agentic"
 version = "0.0.2-alpha.1"
-edition = "2021"
-rust-version = "1.78"
+edition = "2024" 
+rust-version = "1.86"
 license = "MIT OR Apache-2.0"
 description = "Agent flow types and executor library (uses genai)"
 keywords = [
@@ -17,12 +17,13 @@ repository = "https://github.com/jeremychone/rust-agentic"
 
 [lints.rust]
 unsafe_code = "forbid"
-unused = { level = "allow", priority = -1 } # For exploratory dev.
+# unused = { level = "allow", priority = -1 } # For exploratory dev.
 
 [dependencies]
 # -- Json
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-serde_with = { version = "3", features = ["macros"] }
+serde_with = { version = "3", features = ["macros", "base64"] } # Added base64 feature
 # -- Others
 derive_more = { version = "1.0.0-beta", features = ["from"] }
+
