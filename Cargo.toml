@@ -1,15 +1,15 @@
 [package]
 name = "agentic"
-version = "0.0.2-alpha.1"
+version = "0.0.2"
 edition = "2024" 
 rust-version = "1.86"
 license = "MIT OR Apache-2.0"
-description = "Agent flow types and executor library (uses genai)"
+description = "Support library for building Agentic MCP and Agent2Agent-based services"
 keywords = [
-	"generative-ai",
+	"MCP",
 	"agent",
 	"openai",
-	"llama",
+	"Agent2Agent",
 	"ollama"
 ]
 homepage = "https://github.com/jeremychone/rust-agentic"
@@ -25,5 +25,5 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_with = { version = "3", features = ["macros", "base64"] } # Added base64 feature
 # -- Others
-derive_more = { version = "1.0.0-beta", features = ["from"] }
+derive_more = { version = "2", features = ["from"] }
 
