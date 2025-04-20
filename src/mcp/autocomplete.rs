@@ -11,6 +11,7 @@ pub struct CompleteParams {
 	/// Reference to the context (prompt or resource) for completion.
 	#[serde(rename = "ref")]
 	pub reference: CompletionReference,
+
 	/// Information about the argument being completed.
 	pub argument: ArgumentCompletionInfo,
 }
@@ -29,6 +30,7 @@ impl Request for CompleteParams {
 pub struct ArgumentCompletionInfo {
 	/// Name of the argument.
 	pub name: String,
+
 	/// Current value of the argument for matching.
 	pub value: String,
 }
@@ -51,9 +53,11 @@ pub type CompleteResult = ResultData<CompleteResultData>;
 pub struct CompletionInfo {
 	/// Array of completion values (max 100 items suggested by spec).
 	pub values: Vec<String>,
+
 	/// Total number of options available, if known.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub total: Option<u32>,
+
 	/// Indicates if more options exist beyond the response.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub has_more: Option<bool>,
@@ -70,6 +74,7 @@ pub struct CompletionInfo {
 pub enum CompletionReference {
 	#[serde(rename = "ref/resource")]
 	Resource(ResourceReference),
+
 	#[serde(rename = "ref/prompt")]
 	Prompt(PromptReference),
 }

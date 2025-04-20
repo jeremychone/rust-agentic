@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 pub struct CancelledParams {
 	/// The ID of the request to cancel.
 	pub request_id: RequestId,
+
 	/// Optional reason for the cancellation.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub reason: Option<String>,

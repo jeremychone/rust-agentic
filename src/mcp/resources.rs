@@ -24,6 +24,7 @@ pub type ListResourcesRequest = RequestParams<ListResourcesParams>;
 pub struct ListResourcesResultData {
 	#[serde(flatten)]
 	pub pagination: PaginatedResultData,
+
 	pub resources: Vec<Resource>,
 }
 
@@ -57,6 +58,7 @@ pub type ListResourceTemplatesRequest = RequestParams<ListResourceTemplatesParam
 pub struct ListResourceTemplatesResultData {
 	#[serde(flatten)]
 	pub pagination: PaginatedResultData,
+
 	pub resource_templates: Vec<ResourceTemplate>,
 }
 
@@ -190,17 +192,22 @@ impl Notification for ResourceUpdatedParams {
 pub struct Resource {
 	/// The URI of this resource.
 	pub uri: String,
+
 	/// A human-readable name for this resource.
 	pub name: String,
+
 	/// A description of what this resource represents.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub description: Option<String>,
+
 	/// The MIME type of this resource, if known.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub mime_type: Option<String>,
+
 	/// Optional annotations for the client.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub annotations: Option<Annotations>,
+
 	/// The size of the raw resource content in bytes, if known.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub size: Option<u64>, // Using u64 for size
@@ -212,14 +219,18 @@ pub struct Resource {
 pub struct ResourceTemplate {
 	/// A URI template (RFC 6570) for resource URIs.
 	pub uri_template: String,
+
 	/// A human-readable name for the type of resource.
 	pub name: String,
+
 	/// A description of what this template is for.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub description: Option<String>,
+
 	/// The MIME type for resources matching this template, if consistent.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub mime_type: Option<String>,
+
 	/// Optional annotations for the client.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub annotations: Option<Annotations>,

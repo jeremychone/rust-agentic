@@ -13,7 +13,9 @@ pub type PingRequest = RequestParams<PingParams>;
 /// Associates the params/result structures with the Request trait.
 impl Request for PingParams {
 	const METHOD: &'static str = "ping";
+
 	type Params = Self;
+
 	type Result = EmptyResultData;
 }
 

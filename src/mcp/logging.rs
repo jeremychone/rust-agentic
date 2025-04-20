@@ -32,9 +32,11 @@ impl Request for SetLevelParams {
 pub struct LoggingMessageParams {
 	/// Severity of the log message.
 	pub level: LoggingLevel,
+
 	/// Optional name of the logger.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub logger: Option<String>,
+
 	/// The data to be logged (string, object, etc.).
 	pub data: Value,
 }

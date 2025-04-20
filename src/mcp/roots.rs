@@ -37,6 +37,7 @@ pub type ListRootsResult = ResultData<ListRootsResultData>;
 pub struct Root {
 	/// The URI identifying the root (must start with file:// for now).
 	pub uri: String,
+
 	/// Optional human-readable name for the root.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub name: Option<String>,

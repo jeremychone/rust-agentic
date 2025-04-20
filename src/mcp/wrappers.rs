@@ -13,6 +13,7 @@ use std::collections::HashMap;
 pub struct RequestParams<T> {
 	#[serde(rename = "_meta", skip_serializing_if = "Option::is_none")]
 	pub meta: Option<RequestMeta>,
+
 	#[serde(flatten)]
 	pub specific: T,
 }
@@ -24,6 +25,7 @@ pub struct RequestMeta {
 	/// If specified, the caller is requesting out-of-band progress notifications.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub progress_token: Option<ProgressToken>,
+
 	/// Allow arbitrary other metadata.
 	#[serde(flatten)]
 	pub extra: HashMap<String, Value>,
@@ -35,6 +37,7 @@ pub struct RequestMeta {
 pub struct NotificationParams<T> {
 	#[serde(rename = "_meta", skip_serializing_if = "Option::is_none")]
 	pub meta: Option<NotificationMeta>, // Using a dedicated struct for Notification meta
+
 	#[serde(flatten)]
 	pub specific: T,
 }
@@ -53,6 +56,7 @@ pub struct NotificationMeta {
 pub struct ResultData<T> {
 	#[serde(rename = "_meta", skip_serializing_if = "Option::is_none")]
 	pub meta: Option<ResultMeta>, // Using a dedicated struct for Result meta
+
 	#[serde(flatten)]
 	pub specific: T,
 }

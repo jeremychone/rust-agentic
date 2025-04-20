@@ -5,7 +5,9 @@
 /// not the `RequestParams<T>` or `ResultData<T>` wrappers.
 pub trait Request {
 	const METHOD: &'static str;
+
 	type Params; // The specific parameters struct (e.g., InitializeParams)
+
 	type Result; // The specific result struct (e.g., InitializeResultData)
 }
 
@@ -14,5 +16,6 @@ pub trait Request {
 /// not the `NotificationParams<T>` wrapper.
 pub trait Notification {
 	const METHOD: &'static str;
+
 	type Params; // The specific parameters struct (e.g., CancelledParams)
 }

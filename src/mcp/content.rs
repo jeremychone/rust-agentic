@@ -11,6 +11,7 @@ use serde_with::serde_as; // Required for base64
 pub struct TextContent {
 	/// The text content of the message.
 	pub text: String,
+
 	/// Optional annotations for the client.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub annotations: Option<Annotations>,
@@ -24,8 +25,10 @@ pub struct ImageContent {
 	/// The base64-encoded image data.
 	#[serde_as(as = "serde_with::base64::Base64")] // Specify Base64 encoding for this field
 	pub data: Vec<u8>,
+
 	/// The MIME type of the image.
 	pub mime_type: String,
+
 	/// Optional annotations for the client.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub annotations: Option<Annotations>,
@@ -39,8 +42,10 @@ pub struct AudioContent {
 	/// The base64-encoded audio data.
 	#[serde_as(as = "serde_with::base64::Base64")] // Specify Base64 encoding for this field
 	pub data: Vec<u8>,
+
 	/// The MIME type of the audio.
 	pub mime_type: String,
+
 	/// Optional annotations for the client.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub annotations: Option<Annotations>,
@@ -56,6 +61,7 @@ pub struct EmbeddedResource {
 	// Removed `kind: String` field, rely on enum tag
 	/// The actual resource contents.
 	pub resource: ResourceContentsVariant,
+
 	/// Optional annotations for the client.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub annotations: Option<Annotations>,
@@ -77,6 +83,7 @@ impl Default for EmbeddedResource {
 pub struct ResourceContentsBase {
 	/// The URI of this resource.
 	pub uri: String,
+
 	/// The MIME type of this resource, if known.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub mime_type: Option<String>,
@@ -87,6 +94,7 @@ pub struct ResourceContentsBase {
 pub struct TextResourceContents {
 	#[serde(flatten)]
 	pub base: ResourceContentsBase,
+
 	/// The text of the item.
 	pub text: String,
 }
@@ -97,6 +105,7 @@ pub struct TextResourceContents {
 pub struct BlobResourceContents {
 	#[serde(flatten)]
 	pub base: ResourceContentsBase,
+
 	/// A base64-encoded string representing the binary data.
 	#[serde_as(as = "serde_with::base64::Base64")] // Specify Base64 encoding for this field
 	pub blob: Vec<u8>,
@@ -109,5 +118,3 @@ pub enum ResourceContentsVariant {
 	Text(TextResourceContents),
 	Blob(BlobResourceContents),
 }
-
-// endregion: --- Resource Content Types

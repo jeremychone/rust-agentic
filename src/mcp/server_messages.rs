@@ -13,8 +13,10 @@ use serde::{Deserialize, Serialize};
 pub enum ServerRequestSpecificParams {
 	#[serde(rename = "ping")]
 	Ping(PingParams),
+
 	#[serde(rename = "sampling/createMessage")]
 	CreateMessage(CreateMessageParams),
+
 	#[serde(rename = "roots/list")]
 	ListRoots(ListRootsParams),
 }
@@ -34,16 +36,22 @@ pub type ServerRpcRequest = RpcRequest<RequestParams<ServerRequestSpecificParams
 pub enum ServerNotificationSpecificParams {
 	#[serde(rename = "notifications/cancelled")]
 	Cancelled(CancelledParams),
+
 	#[serde(rename = "notifications/progress")]
 	Progress(ProgressParams),
+
 	#[serde(rename = "notifications/message")] // Logging message
 	Message(LoggingMessageParams),
+
 	#[serde(rename = "notifications/resources/updated")]
 	ResourceUpdated(ResourceUpdatedParams),
+
 	#[serde(rename = "notifications/resources/list_changed")]
 	ResourceListChanged(ResourceListChangedParams),
+
 	#[serde(rename = "notifications/tools/list_changed")]
 	ToolListChanged(ToolListChangedParams),
+
 	#[serde(rename = "notifications/prompts/list_changed")]
 	PromptListChanged(PromptListChangedParams),
 }
@@ -63,14 +71,23 @@ pub type ServerRpcNotification = RpcNotification<NotificationParams<ServerNotifi
 pub enum ServerResultSpecificData {
 	// Responses to Client Requests
 	Initialize(InitializeResultData),
+
 	Complete(CompleteResultData),
+
 	GetPrompt(GetPromptResultData),
-	ListPrompts(ListPromptsResultData),                     // Use specific struct
-	ListResources(ListResourcesResultData),                 // Use specific struct
+
+	ListPrompts(ListPromptsResultData), // Use specific struct
+
+	ListResources(ListResourcesResultData), // Use specific struct
+
 	ListResourceTemplates(ListResourceTemplatesResultData), // Use specific struct
+
 	ReadResource(ReadResourceResultData),
+
 	CallTool(CallToolResultData),
+
 	ListTools(ListToolsResultData), // Use specific struct
+
 	// Catch-all for methods that return an empty success response
 	// (like Ping, SetLevel, Subscribe, Unsubscribe)
 	Empty(EmptyResultData),

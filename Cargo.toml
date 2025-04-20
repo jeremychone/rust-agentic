@@ -1,7 +1,7 @@
 [package]
 name = "agentic"
 version = "0.0.3-WIP"
-edition = "2024" 
+edition = "2024"
 rust-version = "1.86"
 license = "MIT OR Apache-2.0"
 description = "Support library for building Agentic MCP and Agent2Agent-based services"
@@ -24,6 +24,6 @@ unsafe_code = "forbid"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_with = { version = "3", features = ["macros", "base64"] } # Added base64 feature
+
 # -- Others
 derive_more = { version = "2", features = ["from"] }
-

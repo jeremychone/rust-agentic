@@ -26,6 +26,7 @@ pub type ListToolsRequest = RequestParams<ListToolsParams>;
 pub struct ListToolsResultData {
 	#[serde(flatten)]
 	pub pagination: PaginatedResultData,
+
 	pub tools: Vec<Tool>,
 }
 
@@ -48,6 +49,7 @@ impl Request for ListToolsParams {
 pub struct CallToolParams {
 	/// The name of the tool to call.
 	pub name: String,
+
 	/// Arguments for the tool.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub arguments: Option<HashMap<String, Value>>,
@@ -61,6 +63,7 @@ pub type CallToolRequest = RequestParams<CallToolParams>;
 #[serde(rename_all = "camelCase")]
 pub struct CallToolResultData {
 	pub content: Vec<ToolResultContent>,
+
 	/// Whether the tool call ended in an error. Defaults to false.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub is_error: Option<bool>,
@@ -120,11 +123,14 @@ impl Notification for ToolListChangedParams {
 pub struct Tool {
 	/// The name of the tool.
 	pub name: String,
+
 	/// Human-readable description.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub description: Option<String>,
+
 	/// JSON Schema object defining expected parameters.
 	pub input_schema: ToolInputSchema,
+
 	/// Optional additional tool information.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub annotations: Option<ToolAnnotations>,
@@ -136,9 +142,11 @@ pub struct Tool {
 pub struct ToolInputSchema {
 	#[serde(rename = "type")]
 	pub schema_type: String, // Should always be "object"
+
 	/// Definition of properties within the object schema. Value represents arbitrary JSON Schema properties.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub properties: Option<HashMap<String, Value>>,
+
 	/// List of required property names.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub required: Option<Vec<String>>,
@@ -162,15 +170,19 @@ pub struct ToolAnnotations {
 	/// Human-readable title.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub title: Option<String>,
+
 	/// Hint: Tool does not modify its environment. (Default: false)
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub read_only_hint: Option<bool>,
+
 	/// Hint: Tool may perform destructive updates. (Default: true)
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub destructive_hint: Option<bool>,
+
 	/// Hint: Tool is idempotent. (Default: false)
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub idempotent_hint: Option<bool>,
+
 	/// Hint: Tool interacts with an open world. (Default: true)
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub open_world_hint: Option<bool>,

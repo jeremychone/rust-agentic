@@ -25,6 +25,7 @@ pub type ListPromptsRequest = RequestParams<ListPromptsParams>;
 pub struct ListPromptsResultData {
 	#[serde(flatten)]
 	pub pagination: PaginatedResultData,
+
 	pub prompts: Vec<Prompt>,
 }
 
@@ -47,6 +48,7 @@ impl Request for ListPromptsParams {
 pub struct GetPromptParams {
 	/// The name of the prompt or template.
 	pub name: String,
+
 	/// Arguments for templating.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub arguments: Option<HashMap<String, String>>,
@@ -61,6 +63,7 @@ pub struct GetPromptResultData {
 	/// Optional description for the prompt.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub description: Option<String>,
+
 	pub messages: Vec<PromptMessage>,
 }
 
@@ -100,9 +103,11 @@ impl Notification for PromptListChangedParams {
 pub struct Prompt {
 	/// The name of the prompt or template.
 	pub name: String,
+
 	/// Optional description.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub description: Option<String>,
+
 	/// Arguments the prompt accepts.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub arguments: Option<Vec<PromptArgument>>,
@@ -113,9 +118,11 @@ pub struct Prompt {
 pub struct PromptArgument {
 	/// The name of the argument.
 	pub name: String,
+
 	/// Human-readable description.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub description: Option<String>,
+
 	/// Whether the argument is required.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub required: Option<bool>,
@@ -125,6 +132,7 @@ pub struct PromptArgument {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PromptMessage {
 	pub role: Role,
+
 	pub content: PromptMessageContent,
 }
 

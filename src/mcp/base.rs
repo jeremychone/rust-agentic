@@ -34,6 +34,7 @@ pub struct Annotations {
 	/// Describes who the intended customer of this object or data is.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub audience: Option<Vec<Role>>,
+
 	/// Describes how important this data is. 1 means most important, 0 least important.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub priority: Option<f64>, // Using f64 for 0.0 to 1.0 range
@@ -47,5 +48,6 @@ pub struct Annotations {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Implementation {
 	pub name: String,
+
 	pub version: String,
 }

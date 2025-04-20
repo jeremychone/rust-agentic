@@ -32,8 +32,11 @@ pub enum RequestId {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RpcRequest<P = Value> {
 	pub jsonrpc: String, // Should always be "2.0"
+
 	pub id: RequestId,
+
 	pub method: String,
+
 	/// Parameters for the method. Can be structured (object/array) or omitted.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub params: Option<P>,
@@ -44,7 +47,9 @@ pub struct RpcRequest<P = Value> {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RpcNotification<P = Value> {
 	pub jsonrpc: String, // Should always be "2.0"
+
 	pub method: String,
+
 	/// Parameters for the method. Can be structured (object/array) or omitted.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub params: Option<P>,
@@ -54,7 +59,9 @@ pub struct RpcNotification<P = Value> {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RpcResponse<R = Value> {
 	pub jsonrpc: String, // Should always be "2.0"
-	pub id: RequestId,   // Must match the request ID it's responding to.
+
+	pub id: RequestId, // Must match the request ID it's responding to.
+
 	/// The result of the method execution. Required on success.
 	pub result: R,
 }
@@ -64,8 +71,10 @@ pub struct RpcResponse<R = Value> {
 pub struct RpcErrorObject {
 	/// A Number that indicates the error type that occurred.
 	pub code: i32,
+
 	/// A String providing a short description of the error.
 	pub message: String,
+
 	/// A Primitive or Structured value containing additional information about the error.
 	/// May be omitted.
 	#[serde(skip_serializing_if = "Option::is_none")]
@@ -76,10 +85,12 @@ pub struct RpcErrorObject {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RpcError {
 	pub jsonrpc: String, // Should always be "2.0"
+
 	/// Must match the request ID it's responding to.
 	/// If the error occurred before the ID could be determined (e.g., Parse error), it should be Null.
 	/// We use Option<RequestId> to represent this possibility.
 	pub id: Option<RequestId>, // Changed to Option<RequestId> to handle cases like parse errors where ID might be null or unknown.
+
 	/// The error object containing details about the error.
 	pub error: RpcErrorObject,
 }

@@ -55,7 +55,9 @@ impl Request for CreateMessageParams {
 #[serde(rename_all = "camelCase")]
 pub enum IncludeContext {
 	None,
+
 	ThisServer,
+
 	AllServers,
 }
 
@@ -89,6 +91,7 @@ pub type CreateMessageResult = ResultData<CreateMessageResultData>;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SamplingMessage {
 	pub role: Role,
+
 	pub content: SamplingMessageContent,
 }
 
@@ -97,7 +100,9 @@ pub struct SamplingMessage {
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum SamplingMessageContent {
 	Text(TextContent),
+
 	Image(ImageContent),
+
 	Audio(AudioContent),
 	// Note: EmbeddedResource is NOT part of SamplingMessageContent, only PromptMessageContent
 }

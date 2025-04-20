@@ -13,8 +13,10 @@ use std::collections::HashMap;
 pub struct InitializeParams {
 	/// The latest MCP version the client supports.
 	pub protocol_version: String,
+
 	/// Capabilities the client supports.
 	pub capabilities: ClientCapabilities,
+
 	/// Information about the client implementation.
 	pub client_info: Implementation,
 }
@@ -39,10 +41,13 @@ impl Request for InitializeParams {
 pub struct InitializeResultData {
 	/// The MCP version the server wants to use.
 	pub protocol_version: String,
+
 	/// Capabilities the server supports.
 	pub capabilities: ServerCapabilities,
+
 	/// Information about the server implementation.
 	pub server_info: Implementation,
+
 	/// Optional instructions describing how to use the server.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub instructions: Option<String>,
@@ -79,9 +84,11 @@ pub struct ClientCapabilities {
 	/// Experimental, non-standard capabilities.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub experimental: Option<HashMap<String, Value>>,
+
 	/// Present if the client supports listing roots.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub roots: Option<RootsClientCapabilities>,
+
 	/// Present if the client supports sampling from an LLM. Using Value as it's just an empty object marker.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub sampling: Option<Value>,
@@ -102,18 +109,23 @@ pub struct ServerCapabilities {
 	/// Experimental, non-standard capabilities.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub experimental: Option<HashMap<String, Value>>,
+
 	/// Present if the server supports sending log messages. Using Value as it's just an empty object marker.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub logging: Option<Value>,
+
 	/// Present if the server supports argument autocompletion. Using Value as it's just an empty object marker.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub completions: Option<Value>,
+
 	/// Present if the server offers any prompt templates.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub prompts: Option<PromptsServerCapabilities>,
+
 	/// Present if the server offers any resources to read.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub resources: Option<ResourcesServerCapabilities>,
+
 	/// Present if the server offers any tools to call.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub tools: Option<ToolsServerCapabilities>,
@@ -133,6 +145,7 @@ pub struct ResourcesServerCapabilities {
 	/// Whether this server supports subscribing to resource updates.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub subscribe: Option<bool>,
+
 	/// Whether this server supports notifications for changes to the resource list.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub list_changed: Option<bool>,
