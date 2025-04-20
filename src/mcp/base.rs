@@ -1,53 +1,75 @@
-//! Base MCP types like constants, identifiers, roles, and common structures.
-
+use crate::mcp::ProgressToken;
+use rpc_router::RpcId;
 use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
+use std::collections::HashMap;
 
-pub const LATEST_PROTOCOL_VERSION: &str = "2025-03-26";
+pub const JSONRPC_VERSION: &str = "2.0";
 
-/// A progress token, used to associate progress notifications with the original request.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum ProgressToken {
-	String(String),
-	Number(i64),
+/// Base structure for JSON-RPC Notifications.
+/// Note: JSON-RPC 2.0 notifications do not have an 'id' field.
+/// They MUST include a 'jsonrpc' field with value "2.0" and a 'method' field.
+/// The 'params' field MAY be omitted.
+/// This struct represents the common part after parsing/before serialization.
+/// The actual 'method' is typically defined as a const on the params type.
+///
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Notification<P = Value> {
+	/// The Method of this notification
+	method: String,
+
+	/// NOTE: TS `Notification` type makes params optional, matching here,
+	///       but the spec says params MAY be omitted entirely, not just be null.
+	///       Using Option<P> allows omitting it via serde `skip_serializing_if`.
+	#[serde(skip_serializing_if = "Option::is_none")]
+	params: Option<P>,
 }
 
-/// An opaque token used to represent a cursor for pagination.
-pub type Cursor = String;
+// region:    --- Request Base Constructs
 
-/// Represents an empty result (success with no data). Used as the `specific` part in `ResultData`.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub struct EmptyResultData {}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Request<P = Value> {
+	/// The json-rpc id
+	id: RpcId,
 
-/// The sender or recipient of messages and data in a conversation.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Role {
-	User,
-	Assistant,
+	/// The Method of this notification
+	method: String,
+
+	/// The Params
+	params: Option<P>,
 }
 
-/// Optional annotations for the client.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+/// Metadata attachable to a request's `_meta` field.
+///
+/// NOTE: For now, we have the Rust representation with progres_token and the extra.
+///       We will add convenient accessors.
+#[serde_with::skip_serializing_none]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Annotations {
-	/// Describes who the intended customer of this object or data is.
-	#[serde(skip_serializing_if = "Option::is_none")]
-	pub audience: Option<Vec<Role>>,
+pub struct RequestMeta {
+	/// If specified, the caller is requesting out-of-band progress notifications.
+	pub progress_token: Option<ProgressToken>,
 
-	/// Describes how important this data is. 1 means most important, 0 least important.
-	#[serde(skip_serializing_if = "Option::is_none")]
-	pub priority: Option<f64>, // Using f64 for 0.0 to 1.0 range
-	                           // NOTE: Although not in the original types.rs, Annotations *could* have arbitrary extra fields.
-	                           // If that's desired, add:
-	                           // #[serde(flatten)]
-	                           // pub extra: std::collections::HashMap<String, Value>,
+	/// Allow arbitrary other metadata.
+	#[serde(flatten)]
+	pub extra: Map<String, Value>,
 }
 
-/// Describes the name and version of an MCP implementation.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub struct Implementation {
-	pub name: String,
+// endregion: --- Request Base Constructs
 
-	pub version: String,
+// region:    --- Common Types
+
+/// Metadata attachable to a notification's `_meta` field.
+///
+/// NOTE: For now, we have the Rust representation with progres_token and the extra.
+///       We will add convenient accessors.
+#[serde_with::skip_serializing_none]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GenericMeta {
+	/// Allow arbitrary other metadata.
+	#[serde(flatten)]
+	pub inner: Map<String, Value>,
 }
+
+// endregion: --- Common Types

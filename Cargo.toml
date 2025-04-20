@@ -17,13 +17,20 @@ repository = "https://github.com/jeremychone/rust-agentic"
 
 [lints.rust]
 unsafe_code = "forbid"
-# unused = { level = "allow", priority = -1 } # For exploratory dev.
+unused = { level = "allow", priority = -1 } # For exploratory dev.
 
 [dependencies]
+# -- Async
+tokio = { version = "1", features = ["full"] } # Added for examples/server runtime
 # -- Json
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-serde_with = { version = "3", features = ["macros", "base64"] } # Added base64 feature
+serde_json = "1" # Added for schema definitions/tool args
+serde_with = { version = "3", features = ["macros", "base64"] }
+# -- RPC
+# Make sure the path is correct for your setup
+rpc-router = { path = "../../../_rust/utils/rust-rpc-router"} # Adjusted path relative to src/
 
 # -- Others
 derive_more = { version = "2", features = ["from"] }
+# thiserror = "1" # Optional: uncomment if you prefer thiserror for the Error enum
+
