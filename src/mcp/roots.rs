@@ -1,36 +1,9 @@
 //! Utility-related requests like logging control, autocompletion, and root listing.
 
-use crate::mcp::{GenericMeta, LoggingLevel, RequestMeta, Root};
+use crate::mcp::{GenericMeta, IntoMcpRequest, LoggingLevel, RequestMeta, Root};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::skip_serializing_none;
-
-// region:    --- SetLevelRequest
-
-/// A request from the client to the server, to enable or adjust logging.
-///
-/// TS Ref: `SetLevelRequest`
-#[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SetLevelParams {
-	#[serde(rename = "_meta")]
-	pub meta: Option<RequestMeta>,
-
-	/// The level of logging that the client wants to receive from the server.
-	/// The server should send all logs at this level and higher (i.e., more severe) to the client as notifications/message.
-	pub level: LoggingLevel,
-}
-
-impl SetLevelParams {
-	pub const METHOD: &'static str = "logging/setLevel";
-}
-
-// Note: The result for SetLevelRequest is `EmptyResult`, which translates to a standard JSON-RPC success response
-// with an empty `result` object (potentially containing only `_meta`).
-// No specific struct is needed for `EmptyResult` itself beyond standard result handling.
-
-// endregion: --- SetLevelRequest
 
 // region:    --- ListRootsRequest
 
@@ -48,8 +21,8 @@ pub struct ListRootsParams {
 	// Note: ListRootsRequest has no specific parameters beyond the optional _meta inherited from Request.
 }
 
-impl ListRootsParams {
-	pub const METHOD: &'static str = "roots/list";
+impl IntoMcpRequest for ListRootsParams {
+	const METHOD: &'static str = "roots/list";
 }
 
 /// The client's response to a roots/list request from the server.

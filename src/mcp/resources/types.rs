@@ -1,7 +1,8 @@
-use crate::mcp::{Annotations, Cursor, Role};
+use crate::mcp::{Annotations, Role}; // Updated import
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use serde_with::skip_serializing_none;
+use serde_with::base64::Base64;
+use serde_with::{serde_as, skip_serializing_none};
 
 /// A known resource that the server is capable of reading.
 ///
@@ -63,6 +64,7 @@ pub struct ResourceTemplate {
 /// The contents of a specific resource or sub-resource.
 ///
 /// TS Ref: `ResourceContents`
+#[serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum ResourceContents {
@@ -92,7 +94,8 @@ pub enum ResourceContents {
 
 		/// A base64-encoded string representing the binary data of the item.
 		/// @format byte
-		blob: String,
+		#[serde_as(as = "Base64")]
+		blob: Vec<u8>,
 	},
 }
 

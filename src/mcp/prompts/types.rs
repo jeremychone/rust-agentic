@@ -1,8 +1,7 @@
-use crate::mcp::{Annotations, Cursor, GenericMeta, PaginationParams, RequestMeta, ResourceContents, Role};
+use crate::mcp::{Annotations, ResourceContents, Role}; // Updated ResourceContents import
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use serde_with::skip_serializing_none;
-use std::collections::HashMap;
+use serde_with::base64::Base64;
+use serde_with::{serde_as, skip_serializing_none};
 
 /// Describes a message returned as part of a prompt.
 ///
@@ -17,9 +16,10 @@ pub struct PromptMessage {
 	pub content: MessageContent,
 }
 
-/// Content types for messages
+/// Content types for messages (used in Prompts and Tool Calls).
 ///
 /// TS Ref: various content types (TextContent, ImageContent, AudioContent, EmbeddedResource)
+#[serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum MessageContent {
@@ -37,7 +37,8 @@ pub enum MessageContent {
 	Image {
 		/// The base64-encoded image data.
 		/// @format byte
-		data: String,
+		#[serde_as(as = "Base64")]
+		data: Vec<u8>,
 
 		/// The MIME type of the image. Different providers may support different image types.
 		mime_type: String,
@@ -51,7 +52,8 @@ pub enum MessageContent {
 	Audio {
 		/// The base64-encoded audio data.
 		/// @format byte
-		data: String,
+		#[serde_as(as = "Base64")]
+		data: Vec<u8>,
 
 		/// The MIME type of the audio. Different providers may support different audio types.
 		mime_type: String,
@@ -61,10 +63,13 @@ pub enum MessageContent {
 		annotations: Option<Annotations>,
 	},
 
+	/// The contents of a resource, embedded into a prompt or tool call result.
+	///
+	/// TS Ref: `EmbeddedResource`
 	#[serde(rename_all = "camelCase")]
 	Resource {
 		/// The resource content
-		resource: ResourceContents,
+		resource: ResourceContents, // Uses ResourceContents enum
 
 		/// Optional annotations for the client.
 		#[serde(skip_serializing_if = "Option::is_none")]
@@ -77,6 +82,7 @@ pub enum MessageContent {
 /// TS Ref: `PromptArgument`
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PromptArgument {
 	/// The name of the argument.
 	pub name: String,
@@ -93,6 +99,7 @@ pub struct PromptArgument {
 /// TS Ref: `Prompt`
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Prompt {
 	/// The name of the prompt or prompt template.
 	pub name: String,
@@ -102,4 +109,14 @@ pub struct Prompt {
 
 	/// A list of arguments to use for templating the prompt.
 	pub arguments: Option<Vec<PromptArgument>>,
+}
+
+/// Identifies a prompt for completion context.
+///
+/// TS Ref: `PromptReference`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PromptReference {
+	/// The name of the prompt or prompt template
+	pub name: String,
 }

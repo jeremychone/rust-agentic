@@ -1,4 +1,4 @@
-use crate::mcp::{GenericMeta, Notification};
+use crate::mcp::{GenericMeta, IntoMcpNotification, McpNotification};
 use rpc_router::RpcId;
 use serde::{Deserialize, Serialize};
 
@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 /// TS Ref: `CancelledNotification`
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CancelledParams {
+pub struct CancelledNotificationParams {
 	#[serde(rename = "_meta")]
 	pub meta: Option<GenericMeta>,
 
@@ -30,11 +30,11 @@ pub struct CancelledParams {
 	pub reason: Option<String>,
 }
 
-impl CancelledParams {
-	pub const METHOD: &'static str = "notifications/cancelled";
+impl IntoMcpNotification for CancelledNotificationParams {
+	const METHOD: &'static str = "notifications/cancelled";
 }
 
-pub type CancelledNotification = Notification<CancelledParams>;
+pub type CancelledNotification = McpNotification<CancelledNotificationParams>;
 
 // endregion: --- CancelledNotification
 
@@ -45,15 +45,15 @@ pub type CancelledNotification = Notification<CancelledParams>;
 /// TS Ref: `InitializedNotification`
 #[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct InitializedParams {
+pub struct InitializedNotificationParams {
 	#[serde(rename = "_meta")]
 	pub meta: Option<GenericMeta>,
 } // No parameters
 
-impl InitializedParams {
-	pub const METHOD: &'static str = "notifications/initialized";
+impl IntoMcpNotification for InitializedNotificationParams {
+	const METHOD: &'static str = "notifications/initialized";
 }
 
-pub type InitializedNotification = Notification<InitializedParams>;
+pub type InitializedNotification = McpNotification<InitializedNotificationParams>;
 
 // endregion: --- InitializedNotification

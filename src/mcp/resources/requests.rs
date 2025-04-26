@@ -1,4 +1,5 @@
-use crate::mcp::{Cursor, GenericMeta, PaginationParams, RequestMeta, Resource, ResourceContents, ResourceTemplate};
+use super::types::{Resource, ResourceContents, ResourceTemplate}; // Updated imports
+use crate::mcp::{Cursor, GenericMeta, IntoMcpRequest, PaginationParams, RequestMeta}; // Adjusted common imports
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::skip_serializing_none;
@@ -20,8 +21,8 @@ pub struct ListResourcesParams {
 	pub pagination: PaginationParams,
 }
 
-impl ListResourcesParams {
-	pub const METHOD: &'static str = "resources/list";
+impl IntoMcpRequest for ListResourcesParams {
+	const METHOD: &'static str = "resources/list";
 }
 
 /// The server's response to a resources/list request from the client.
@@ -62,8 +63,8 @@ pub struct ListResourceTemplatesParams {
 	pub pagination: PaginationParams,
 }
 
-impl ListResourceTemplatesParams {
-	pub const METHOD: &'static str = "resources/templates/list";
+impl IntoMcpRequest for ListResourceTemplatesParams {
+	const METHOD: &'static str = "resources/templates/list";
 }
 
 /// The server's response to a resources/templates/list request from the client.
@@ -75,7 +76,7 @@ impl ListResourceTemplatesParams {
 pub struct ListResourceTemplatesResult {
 	/// Optional metadata
 	#[serde(rename = "_meta")]
-	pub meta: Option<RequestMeta>,
+	pub meta: Option<GenericMeta>, // Corrected meta type
 
 	/// An opaque token representing the pagination position after the last returned result.
 	/// If present, there may be more results available.
@@ -104,8 +105,8 @@ pub struct ReadResourceParams {
 	pub uri: String,
 }
 
-impl ReadResourceParams {
-	pub const METHOD: &'static str = "resources/read";
+impl IntoMcpRequest for ReadResourceParams {
+	const METHOD: &'static str = "resources/read";
 }
 
 /// The server's response to a resources/read request from the client.
@@ -117,7 +118,7 @@ impl ReadResourceParams {
 pub struct ReadResourceResult {
 	/// Optional metadata
 	#[serde(rename = "_meta")]
-	pub meta: Option<RequestMeta>,
+	pub meta: Option<GenericMeta>, // Corrected meta type
 
 	/// The contents of the resource
 	pub contents: Vec<ResourceContents>,
@@ -142,8 +143,8 @@ pub struct SubscribeParams {
 	pub uri: String,
 }
 
-impl SubscribeParams {
-	pub const METHOD: &'static str = "resources/subscribe";
+impl IntoMcpRequest for SubscribeParams {
+	const METHOD: &'static str = "resources/subscribe";
 }
 
 // Note: No specific result type is defined for SubscribeRequest - it uses EmptyResult
@@ -168,8 +169,8 @@ pub struct UnsubscribeParams {
 	pub uri: String,
 }
 
-impl UnsubscribeParams {
-	pub const METHOD: &'static str = "resources/unsubscribe";
+impl IntoMcpRequest for UnsubscribeParams {
+	const METHOD: &'static str = "resources/unsubscribe";
 }
 
 // Note: No specific result type is defined for UnsubscribeRequest - it uses EmptyResult

@@ -1,6 +1,5 @@
-use crate::mcp::{Cursor, GenericMeta, PaginationParams, Prompt, PromptMessage, RequestMeta};
+use crate::mcp::{Cursor, GenericMeta, IntoMcpRequest, PaginationParams, Prompt, PromptMessage, RequestMeta};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use serde_with::skip_serializing_none;
 use std::collections::HashMap;
 
@@ -21,8 +20,8 @@ pub struct ListPromptsParams {
 	pub pagination: PaginationParams,
 }
 
-impl ListPromptsParams {
-	pub const METHOD: &'static str = "prompts/list";
+impl IntoMcpRequest for ListPromptsParams {
+	const METHOD: &'static str = "prompts/list";
 }
 
 /// The server's response to a prompts/list request from the client.
@@ -65,8 +64,8 @@ pub struct GetPromptParams {
 	pub arguments: Option<HashMap<String, String>>,
 }
 
-impl GetPromptParams {
-	pub const METHOD: &'static str = "prompts/get";
+impl IntoMcpRequest for GetPromptParams {
+	const METHOD: &'static str = "prompts/get";
 }
 
 /// The server's response to a prompts/get request from the client.

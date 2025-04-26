@@ -1,7 +1,10 @@
-use crate::mcp::Cursor;
+use crate::mcp::{Cursor, GenericMeta, ProgressToken}; // Added GenericMeta import
+use rpc_router::RpcId;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use serde_with::skip_serializing_none;
+use serde_json::{Map, Value};
+use std::collections::HashMap;
+
+pub const JSONRPC_VERSION: &str = "2.0";
 
 /// Describes the name and version of an MCP implementation.
 /// Used in InitializeRequest and InitializeResult.
@@ -40,7 +43,7 @@ pub enum IncludeContext {
 /// Optional annotations for the client. The client can use annotations to inform how objects are used or displayed
 ///
 /// TS Ref: `Annotations`
-#[skip_serializing_none]
+#[serde_with::skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Annotations {
@@ -64,4 +67,16 @@ pub struct Annotations {
 pub enum Role {
 	User,
 	Assistant,
+}
+
+/// Represents an empty JSON-RPC result, potentially containing only metadata.
+/// Used for requests like `ping`, `logging/setLevel`, `resources/subscribe`, `resources/unsubscribe`.
+///
+/// TS Ref: `EmptyResult`
+#[serde_with::skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct EmptyResult {
+	/// Optional metadata
+	#[serde(rename = "_meta")]
+	pub meta: Option<GenericMeta>,
 }

@@ -1,4 +1,4 @@
-use crate::mcp::{GenericMeta, LoggingLevel, RequestMeta, Root};
+use crate::mcp::{GenericMeta, IntoMcpRequest, LoggingLevel, PromptReference, RequestMeta, Root};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::skip_serializing_none;
@@ -11,20 +11,12 @@ use serde_with::skip_serializing_none;
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum CompletionReference {
 	#[serde(rename = "ref/prompt")]
-	Prompt(PromptReference),
+	Prompt(PromptReference), // Uses the imported PromptReference
 	#[serde(rename = "ref/resource")]
 	Resource(ResourceReference),
 }
 
-/// Identifies a prompt for completion context.
-///
-/// TS Ref: `PromptReference`
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PromptReference {
-	/// The name of the prompt or prompt template
-	pub name: String,
-}
+// Note: PromptReference moved to src/mcp/prompts/types.rs
 
 /// Identifies a resource or template for completion context.
 ///
@@ -67,8 +59,8 @@ pub struct CompleteParams {
 	pub argument: CompletionArgument,
 }
 
-impl CompleteParams {
-	pub const METHOD: &'static str = "completion/complete";
+impl IntoMcpRequest for CompleteParams {
+	const METHOD: &'static str = "completion/complete";
 }
 
 /// Data containing the completion results.

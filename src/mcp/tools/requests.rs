@@ -1,7 +1,5 @@
-use crate::mcp::{
-	Cursor, GenericMeta, MessageContent, PaginationParams, RequestMeta, ResourceContents, Role, Tool, ToolAnnotations,
-	ToolInputSchema,
-};
+use super::types::Tool; // Import Tool from the same module tree
+use crate::mcp::{Cursor, GenericMeta, IntoMcpRequest, MessageContent, PaginationParams, RequestMeta};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::skip_serializing_none;
@@ -24,8 +22,8 @@ pub struct ListToolsParams {
 	pub pagination: PaginationParams,
 }
 
-impl ListToolsParams {
-	pub const METHOD: &'static str = "tools/list";
+impl IntoMcpRequest for ListToolsParams {
+	const METHOD: &'static str = "tools/list";
 }
 
 /// The server's response to a tools/list request from the client.
@@ -69,8 +67,8 @@ pub struct CallToolParams {
 	pub arguments: Option<HashMap<String, Value>>,
 }
 
-impl CallToolParams {
-	pub const METHOD: &'static str = "tools/call";
+impl IntoMcpRequest for CallToolParams {
+	const METHOD: &'static str = "tools/call";
 }
 
 /// The server's response to a tool call.

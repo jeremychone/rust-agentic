@@ -1,4 +1,6 @@
-use crate::mcp::{ClientCapabilities, GenericMeta, Implementation, RequestMeta, ServerCapabilities};
+use crate::mcp::{
+	ClientCapabilities, GenericMeta, Implementation, IntoMcpRequest, McpRequest, RequestMeta, ServerCapabilities,
+};
 use rpc_router::RpcId;
 use serde::{Deserialize, Serialize};
 use serde_json::Value; // Added for potential future _meta content
@@ -22,9 +24,49 @@ pub struct InitializeParams {
 	pub client_info: Implementation,
 }
 
-impl InitializeParams {
-	pub const METHOD: &'static str = "initialize";
+// region:    --- IntoRequest
+
+// Example for a param struct
+impl IntoMcpRequest for InitializeParams {
+	const METHOD: &'static str = "initialize";
 }
+
+// endregion: --- IntoRequest
+
+// region:    --- Contructor
+impl InitializeParams {
+	pub fn from_client_info(name: impl Into<String>, version: impl Into<String>) -> Self {
+		Self {
+			meta: None,
+			protocol_version: crate::mcp::LATEST_PROTOCOL_VERSION.to_string(),
+			capabilities: ClientCapabilities::default(),
+			client_info: Implementation {
+				name: name.into(),
+				version: version.into(),
+			},
+		}
+	}
+}
+// endregion: --- Contructor
+
+// region:    --- Withs
+
+impl InitializeParams {
+	pub fn with_meta(mut self, meta: RequestMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+	pub fn with_capabilities(mut self, capabilities: ClientCapabilities) -> Self {
+		self.capabilities = capabilities;
+		self
+	}
+	pub fn with_client_info(mut self, client_info: Implementation) -> Self {
+		self.client_info = client_info;
+		self
+	}
+}
+
+// endregion: --- Withs
 
 /// After receiving an initialize request from the client, the server sends this response.
 ///
@@ -70,8 +112,8 @@ pub struct PingParams {
 	// Serde will serialize this as an empty object `{}` or just `{"_meta": ...}` if meta is Some.
 }
 
-impl PingParams {
-	pub const METHOD: &'static str = "ping";
+impl IntoMcpRequest for PingParams {
+	const METHOD: &'static str = "ping";
 }
 
 // Note: The result for PingRequest is `EmptyResult`, which translates to a standard JSON-RPC success response
