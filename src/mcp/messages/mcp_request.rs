@@ -16,7 +16,7 @@ pub struct McpRequest<P = Value> {
 
 // region:    --- IntoRequest
 
-pub trait IntoMcpRequest: Sized {
+pub trait IntoMcpRequest: Serialize + Sized {
 	const METHOD: &'static str;
 
 	fn into_mcp_request(self) -> McpRequest<Self> {
@@ -34,7 +34,6 @@ impl<T: IntoMcpRequest> From<T> for McpRequest<T> {
 		}
 	}
 }
-
 // endregion: --- IntoRequest
 
 // region:    --- Custom De/Serialization

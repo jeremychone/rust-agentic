@@ -1,4 +1,5 @@
 use derive_more::{Display, From};
+use flume::{RecvError, SendError};
 
 pub type Result<T> = core::result::Result<T, Error>;
 
@@ -7,7 +8,26 @@ pub type Result<T> = core::result::Result<T, Error>;
 pub enum Error {
 	#[from]
 	Custom(String),
+
+	SendError(String),
+	RecvError(RecvError),
 }
+
+// region:    --- Froms
+
+impl From<SendError<String>> for Error {
+	fn from(value: SendError<String>) -> Self {
+		Self::SendError(value.to_string())
+	}
+}
+
+impl From<RecvError> for Error {
+	fn from(err: RecvError) -> Self {
+		Self::RecvError(err)
+	}
+}
+
+// endregion: --- Froms
 
 // region:    --- Custom
 

@@ -26,7 +26,7 @@ pub use roots::*;
 pub use sampling::*;
 pub use tools::*;
 
-pub mod transport;
+pub mod client;
 
 // endregion: --- Modules
 
