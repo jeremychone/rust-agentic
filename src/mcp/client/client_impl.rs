@@ -76,10 +76,6 @@ impl Client {
 		let init_params = InitializeParams::from_client_info(self.name(), self.version());
 		let init_req = init_params.into_mcp_request();
 		self.send_request(init_req).await?;
-		println!("->> after initialize req");
-
-		// sleep 500 ms
-		// tokio::time::sleep(tokio::time::Duration::from_millis(5000)).await;
 
 		Ok(())
 	}

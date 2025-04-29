@@ -23,6 +23,9 @@ impl<P: Serialize> McpResponse<P> {
 	pub fn stringify(&self) -> Result<String> {
 		serde_json::to_string(&self).map_err(Error::custom_from_err)
 	}
+	pub fn stringify_pretty(&self) -> Result<String> {
+		serde_json::to_string_pretty(&self).map_err(Error::custom_from_err)
+	}
 }
 
 // region:    --- Custom De/Serialization

@@ -103,7 +103,7 @@ impl ClientStdioTransport {
 					break;
 				}
 			}
-			println!("\n->> STDIN Task Ended\n");
+			println!("\nSTDIN Task Ended\n");
 		});
 
 		// -- Build the ClientTransportController
@@ -129,7 +129,7 @@ impl From<ClientStdioTransportConfig> for ClientStdioTransport {
 
 async fn send_to_stdin(child_stdin: &mut ChildStdin, payload: &str) -> Result<()> {
 	// 1. Write payload asynchronously (DO NOT re-serialize)
-	println!("->> SENT TO STDIN: -{payload}-");
+	println!("\nSENT TO STDIN: -{payload}-");
 	if let Err(e) = child_stdin.write_all(payload.as_bytes()).await {
 		eprintln!("Error writing payload to stdin: {}", e);
 		// Return an error to potentially stop the STDIN loop
