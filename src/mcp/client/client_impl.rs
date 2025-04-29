@@ -20,13 +20,13 @@ type OneShotRes = oneshot::Sender<McpMessage>;
 #[derive(Clone)]
 pub struct Client {
 	inner: Arc<ClientInner>,
-	res_queue: Arc<DashMap<RpcId, OneShotRes>>,
 	comm_inner: Option<Arc<CommInner>>,
 }
 
 struct ClientInner {
 	name: String,
 	version: String,
+	res_queue: Arc<DashMap<RpcId, OneShotRes>>,
 }
 
 struct CommInner {
@@ -41,11 +41,12 @@ impl Client {
 		let info_inner = ClientInner {
 			name: client_name.into(),
 			version: client_version.into(),
+			res_queue: Arc::new(DashMap::new()),
 		};
 
 		Self {
 			inner: info_inner.into(),
-			res_queue: Arc::new(DashMap::new()),
+
 			comm_inner: None,
 		}
 	}
@@ -90,7 +91,7 @@ impl Client {
 		// -- Build and bind the one shot for the response
 		let (tx, rx) = oneshot::channel::<McpMessage>();
 		let rpc_id = req.id.clone();
-		self.res_queue.insert(rpc_id, tx);
+		self.inner.res_queue.insert(rpc_id, tx);
 
 		// -- Send the message
 		let msg = serde_json::to_string(&req).map_err(Error::custom_from_err)?;
@@ -137,7 +138,7 @@ impl Client {
 
 impl Client {
 	fn run_out_rx(&self, out_rx: CommRx) -> Result<()> {
-		let res_queue = self.res_queue.clone();
+		let res_queue = self.inner.res_queue.clone();
 		tokio::spawn(async move {
 			loop {
 				match out_rx.recv().await {
