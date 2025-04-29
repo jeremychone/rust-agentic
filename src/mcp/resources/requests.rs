@@ -23,6 +23,7 @@ pub struct ListResourcesParams {
 
 impl IntoMcpRequest<ListResourcesParams> for ListResourcesParams {
 	const METHOD: &'static str = "resources/list";
+	type McpResult = ListResourcesResult;
 }
 
 /// The server's response to a resources/list request from the client.
@@ -65,6 +66,7 @@ pub struct ListResourceTemplatesParams {
 
 impl IntoMcpRequest<ListResourceTemplatesParams> for ListResourceTemplatesParams {
 	const METHOD: &'static str = "resources/templates/list";
+	type McpResult = ListResourceTemplatesResult;
 }
 
 /// The server's response to a resources/templates/list request from the client.
@@ -107,6 +109,7 @@ pub struct ReadResourceParams {
 
 impl IntoMcpRequest<ReadResourceParams> for ReadResourceParams {
 	const METHOD: &'static str = "resources/read";
+	type McpResult = ReadResourceResult;
 }
 
 /// The server's response to a resources/read request from the client.
@@ -145,6 +148,7 @@ pub struct SubscribeParams {
 
 impl IntoMcpRequest<SubscribeParams> for SubscribeParams {
 	const METHOD: &'static str = "resources/subscribe";
+	type McpResult = ();
 }
 
 // Note: No specific result type is defined for SubscribeRequest - it uses EmptyResult
@@ -171,6 +175,7 @@ pub struct UnsubscribeParams {
 
 impl IntoMcpRequest<UnsubscribeParams> for UnsubscribeParams {
 	const METHOD: &'static str = "resources/unsubscribe";
+	type McpResult = ();
 }
 
 // Note: No specific result type is defined for UnsubscribeRequest - it uses EmptyResult

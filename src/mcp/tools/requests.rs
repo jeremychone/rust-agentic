@@ -24,6 +24,7 @@ pub struct ListToolsParams {
 
 impl IntoMcpRequest<ListToolsParams> for ListToolsParams {
 	const METHOD: &'static str = "tools/list";
+	type McpResult = ListToolsResult;
 }
 
 /// The server's response to a tools/list request from the client.
@@ -69,6 +70,7 @@ pub struct CallToolParams {
 
 impl IntoMcpRequest<CallToolParams> for CallToolParams {
 	const METHOD: &'static str = "tools/call";
+	type McpResult = CallToolResult;
 }
 
 /// The server's response to a tool call.

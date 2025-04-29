@@ -38,6 +38,7 @@ impl<P: Serialize> McpRequest<P> {
 
 pub trait IntoMcpRequest<P>: Serialize + Sized + Into<McpRequest<P>> {
 	const METHOD: &'static str;
+	type McpResult;
 
 	fn into_mcp_request(self) -> McpRequest<P> {
 		self.into()

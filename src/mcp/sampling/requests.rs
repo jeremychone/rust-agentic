@@ -45,6 +45,7 @@ pub struct CreateMessageParams {
 
 impl IntoMcpRequest<CreateMessageParams> for CreateMessageParams {
 	const METHOD: &'static str = "sampling/createMessage";
+	type McpResult = CreateMessageResult;
 }
 
 /// The client's response to a sampling/createMessage request from the server.

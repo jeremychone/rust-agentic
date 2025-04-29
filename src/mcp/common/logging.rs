@@ -38,6 +38,7 @@ pub struct SetLevelParams {
 
 impl IntoMcpRequest<SetLevelParams> for SetLevelParams {
 	const METHOD: &'static str = "logging/setLevel";
+	type McpResult = ();
 }
 
 // Note: The result for SetLevelRequest is `EmptyResult`, which translates to a standard JSON-RPC success response

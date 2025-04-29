@@ -29,6 +29,7 @@ pub struct InitializeParams {
 // Example for a param struct
 impl IntoMcpRequest<InitializeParams> for InitializeParams {
 	const METHOD: &'static str = "initialize";
+	type McpResult = InitializeResult;
 }
 
 // endregion: --- IntoRequest
@@ -114,6 +115,7 @@ pub struct PingParams {
 
 impl IntoMcpRequest<PingParams> for PingParams {
 	const METHOD: &'static str = "ping";
+	type McpResult = ();
 }
 
 // Note: The result for PingRequest is `EmptyResult`, which translates to a standard JSON-RPC success response

@@ -61,6 +61,22 @@ pub struct CompleteParams {
 
 impl IntoMcpRequest<CompleteParams> for CompleteParams {
 	const METHOD: &'static str = "completion/complete";
+	type McpResult = CompleteResult;
+}
+
+/// The server's response to a completion/complete request
+///
+/// TS Ref: `CompleteResult`
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CompleteResult {
+	/// Optional metadata
+	#[serde(rename = "_meta")]
+	pub meta: Option<GenericMeta>,
+
+	/// The completion data.
+	pub completion: CompletionResultData,
 }
 
 /// Data containing the completion results.
@@ -80,19 +96,4 @@ pub struct CompletionResultData {
 	/// Indicates whether there are additional completion options beyond those provided in the current response,
 	/// even if the exact total is unknown.
 	pub has_more: Option<bool>,
-}
-
-/// The server's response to a completion/complete request
-///
-/// TS Ref: `CompleteResult`
-#[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CompleteResult {
-	/// Optional metadata
-	#[serde(rename = "_meta")]
-	pub meta: Option<GenericMeta>,
-
-	/// The completion data.
-	pub completion: CompletionResultData,
 }

@@ -22,6 +22,7 @@ pub struct ListPromptsParams {
 
 impl IntoMcpRequest<ListPromptsParams> for ListPromptsParams {
 	const METHOD: &'static str = "prompts/list";
+	type McpResult = ListPromptsResult;
 }
 
 /// The server's response to a prompts/list request from the client.
@@ -66,6 +67,7 @@ pub struct GetPromptParams {
 
 impl IntoMcpRequest<GetPromptParams> for GetPromptParams {
 	const METHOD: &'static str = "prompts/get";
+	type McpResult = GetPromptResult;
 }
 
 /// The server's response to a prompts/get request from the client.

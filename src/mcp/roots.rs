@@ -23,6 +23,7 @@ pub struct ListRootsParams {
 
 impl IntoMcpRequest<ListRootsParams> for ListRootsParams {
 	const METHOD: &'static str = "roots/list";
+	type McpResult = ListRootsResult;
 }
 
 /// The client's response to a roots/list request from the server.
