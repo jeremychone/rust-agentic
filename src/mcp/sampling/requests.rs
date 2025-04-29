@@ -43,7 +43,7 @@ pub struct CreateMessageParams {
 	pub metadata: Option<Value>,
 }
 
-impl IntoMcpRequest for CreateMessageParams {
+impl IntoMcpRequest<CreateMessageParams> for CreateMessageParams {
 	const METHOD: &'static str = "sampling/createMessage";
 }
 

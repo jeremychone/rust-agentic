@@ -21,7 +21,7 @@ pub struct ListResourcesParams {
 	pub pagination: PaginationParams,
 }
 
-impl IntoMcpRequest for ListResourcesParams {
+impl IntoMcpRequest<ListResourcesParams> for ListResourcesParams {
 	const METHOD: &'static str = "resources/list";
 }
 
@@ -63,7 +63,7 @@ pub struct ListResourceTemplatesParams {
 	pub pagination: PaginationParams,
 }
 
-impl IntoMcpRequest for ListResourceTemplatesParams {
+impl IntoMcpRequest<ListResourceTemplatesParams> for ListResourceTemplatesParams {
 	const METHOD: &'static str = "resources/templates/list";
 }
 
@@ -105,7 +105,7 @@ pub struct ReadResourceParams {
 	pub uri: String,
 }
 
-impl IntoMcpRequest for ReadResourceParams {
+impl IntoMcpRequest<ReadResourceParams> for ReadResourceParams {
 	const METHOD: &'static str = "resources/read";
 }
 
@@ -143,7 +143,7 @@ pub struct SubscribeParams {
 	pub uri: String,
 }
 
-impl IntoMcpRequest for SubscribeParams {
+impl IntoMcpRequest<SubscribeParams> for SubscribeParams {
 	const METHOD: &'static str = "resources/subscribe";
 }
 
@@ -169,7 +169,7 @@ pub struct UnsubscribeParams {
 	pub uri: String,
 }
 
-impl IntoMcpRequest for UnsubscribeParams {
+impl IntoMcpRequest<UnsubscribeParams> for UnsubscribeParams {
 	const METHOD: &'static str = "resources/unsubscribe";
 }
 

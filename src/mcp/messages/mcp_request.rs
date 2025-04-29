@@ -16,6 +16,16 @@ pub struct McpRequest<P = Value> {
 }
 
 impl<P: Serialize> McpRequest<P> {
+	pub fn new(id: impl Into<RpcId>, method: impl Into<String>, params: Option<P>) -> Self {
+		McpRequest {
+			id: id.into(),
+			method: method.into(),
+			params,
+		}
+	}
+}
+
+impl<P: Serialize> McpRequest<P> {
 	pub fn stringify(&self) -> Result<String> {
 		serde_json::to_string(&self).map_err(Error::custom_from_err)
 	}
@@ -26,20 +36,20 @@ impl<P: Serialize> McpRequest<P> {
 
 // region:    --- IntoRequest
 
-pub trait IntoMcpRequest: Serialize + Sized {
+pub trait IntoMcpRequest<P>: Serialize + Sized + Into<McpRequest<P>> {
 	const METHOD: &'static str;
 
-	fn into_mcp_request(self) -> McpRequest<Self> {
+	fn into_mcp_request(self) -> McpRequest<P> {
 		self.into()
 	}
 }
 
-impl<T: IntoMcpRequest> From<T> for McpRequest<T> {
-	fn from(params: T) -> Self {
+impl<P: Serialize + IntoMcpRequest<P>> From<P> for McpRequest<P> {
+	fn from(params: P) -> Self {
 		let id = RpcId::new_uuid_v7_base58();
 		McpRequest {
 			id,
-			method: T::METHOD.to_string(),
+			method: P::METHOD.to_string(),
 			params: Some(params),
 		}
 	}

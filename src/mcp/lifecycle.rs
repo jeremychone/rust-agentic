@@ -1,7 +1,7 @@
+use crate::RpcId;
 use crate::mcp::{
 	ClientCapabilities, GenericMeta, Implementation, IntoMcpRequest, McpRequest, RequestMeta, ServerCapabilities,
 };
-use crate::RpcId;
 use serde::{Deserialize, Serialize};
 use serde_json::Value; // Added for potential future _meta content
 
@@ -27,7 +27,7 @@ pub struct InitializeParams {
 // region:    --- IntoRequest
 
 // Example for a param struct
-impl IntoMcpRequest for InitializeParams {
+impl IntoMcpRequest<InitializeParams> for InitializeParams {
 	const METHOD: &'static str = "initialize";
 }
 
@@ -112,7 +112,7 @@ pub struct PingParams {
 	// Serde will serialize this as an empty object `{}` or just `{"_meta": ...}` if meta is Some.
 }
 
-impl IntoMcpRequest for PingParams {
+impl IntoMcpRequest<PingParams> for PingParams {
 	const METHOD: &'static str = "ping";
 }
 

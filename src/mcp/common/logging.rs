@@ -36,7 +36,7 @@ pub struct SetLevelParams {
 	pub level: LoggingLevel,
 }
 
-impl IntoMcpRequest for SetLevelParams {
+impl IntoMcpRequest<SetLevelParams> for SetLevelParams {
 	const METHOD: &'static str = "logging/setLevel";
 }
 

@@ -21,7 +21,7 @@ pub struct ListRootsParams {
 	// Note: ListRootsRequest has no specific parameters beyond the optional _meta inherited from Request.
 }
 
-impl IntoMcpRequest for ListRootsParams {
+impl IntoMcpRequest<ListRootsParams> for ListRootsParams {
 	const METHOD: &'static str = "roots/list";
 }
 

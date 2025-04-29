@@ -22,7 +22,7 @@ pub struct ListToolsParams {
 	pub pagination: PaginationParams,
 }
 
-impl IntoMcpRequest for ListToolsParams {
+impl IntoMcpRequest<ListToolsParams> for ListToolsParams {
 	const METHOD: &'static str = "tools/list";
 }
 
@@ -67,7 +67,7 @@ pub struct CallToolParams {
 	pub arguments: Option<HashMap<String, Value>>,
 }
 
-impl IntoMcpRequest for CallToolParams {
+impl IntoMcpRequest<CallToolParams> for CallToolParams {
 	const METHOD: &'static str = "tools/call";
 }
 

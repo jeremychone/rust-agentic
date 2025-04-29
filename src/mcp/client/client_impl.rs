@@ -1,3 +1,4 @@
+use crate::RpcId;
 use crate::mcp::InitializeParams;
 use crate::mcp::IntoMcpRequest;
 use crate::mcp::McpMessage;
@@ -10,7 +11,6 @@ use crate::mcp::client::coms_trx::new_trx_pair;
 use crate::mcp::client::transport::ClientTransport;
 use crate::mcp::client::{Error, Result};
 use dashmap::DashMap;
-use crate::RpcId;
 use serde::Serialize;
 use std::sync::Arc;
 use tokio::sync::oneshot;
@@ -84,10 +84,12 @@ impl Client {
 
 /// Communications
 impl Client {
-	pub async fn send_request<P>(&self, req: McpRequest<P>) -> Result<McpMessage>
+	pub async fn send_request<P>(&self, req: impl Into<McpRequest<P>>) -> Result<McpMessage>
 	where
 		P: Serialize,
 	{
+		let req = req.into();
+
 		// -- Build and bind the one shot for the response
 		let (tx, rx) = oneshot::channel::<McpMessage>();
 		let rpc_id = req.id.clone();

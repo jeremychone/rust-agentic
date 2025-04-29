@@ -59,7 +59,7 @@ pub struct CompleteParams {
 	pub argument: CompletionArgument,
 }
 
-impl IntoMcpRequest for CompleteParams {
+impl IntoMcpRequest<CompleteParams> for CompleteParams {
 	const METHOD: &'static str = "completion/complete";
 }
 

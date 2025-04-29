@@ -20,7 +20,7 @@ pub struct ListPromptsParams {
 	pub pagination: PaginationParams,
 }
 
-impl IntoMcpRequest for ListPromptsParams {
+impl IntoMcpRequest<ListPromptsParams> for ListPromptsParams {
 	const METHOD: &'static str = "prompts/list";
 }
 
@@ -64,7 +64,7 @@ pub struct GetPromptParams {
 	pub arguments: Option<HashMap<String, String>>,
 }
 
-impl IntoMcpRequest for GetPromptParams {
+impl IntoMcpRequest<GetPromptParams> for GetPromptParams {
 	const METHOD: &'static str = "prompts/get";
 }
 
