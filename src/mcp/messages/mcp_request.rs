@@ -15,12 +15,12 @@ pub struct McpRequest<P = Value> {
 	pub params: Option<P>,
 }
 
-impl<P: Serialize> McpRequest<P> {
-	pub fn new(id: impl Into<RpcId>, method: impl Into<String>, params: Option<P>) -> Self {
+impl<P: Serialize + IntoMcpRequest<P>> McpRequest<P> {
+	pub fn new(id: impl Into<RpcId>, params: P) -> Self {
 		McpRequest {
 			id: id.into(),
-			method: method.into(),
-			params,
+			method: P::METHOD.into(),
+			params: Some(params),
 		}
 	}
 }
