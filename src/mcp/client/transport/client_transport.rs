@@ -1,6 +1,6 @@
 use crate::mcp::client::ClientStdioTransportConfig;
 use crate::mcp::client::Result;
-use crate::mcp::client::server_io_trx::ServerIoTrx;
+use crate::mcp::client::coms_trx::TransportTrx;
 use crate::mcp::client::transport::ClientStdioTransport;
 use derive_more::From;
 
@@ -10,17 +10,11 @@ pub enum ClientTransport {
 }
 
 impl ClientTransport {
-	pub(crate) async fn start(&mut self, io_trx: ServerIoTrx) -> Result<()> {
+	pub(crate) async fn start(&mut self, transport_trx: TransportTrx) -> Result<()> {
 		match self {
-			ClientTransport::StdioTransport(transport) => transport.start(io_trx).await?,
+			ClientTransport::StdioTransport(transport) => transport.start(transport_trx).await?,
 		};
 		Ok(())
-	}
-
-	pub async fn send_to_server(&self, message: impl Into<String>) -> Result<()> {
-		match self {
-			ClientTransport::StdioTransport(transport) => transport.send_to_server(message).await,
-		}
 	}
 }
 

@@ -1,4 +1,4 @@
-use crate::mcp::client::ServerIoTrx;
+use crate::mcp::client::coms_trx::TransportTrx;
 use crate::mcp::client::transport::support::StdioHandles;
 use crate::mcp::client::{ClientStdioTransportConfig, Error, Result};
 use std::sync::Arc;
@@ -11,13 +11,14 @@ pub struct ClientStdioTransport {
 }
 
 pub struct ClientStdioTransportInner {
-	stdio_trx: ServerIoTrx,
 	stdio_handles: StdioHandles,
 }
 
 /// Lifecycle - start
 impl ClientStdioTransport {
-	pub(super) async fn start(&mut self, stdio_trx: ServerIoTrx) -> Result<()> {
+	pub(super) async fn start(&mut self, transport_trx: TransportTrx) -> Result<()> {
+		let TransportTrx { in_rx, out_tx, err_tx } = transport_trx;
+
 		// -- Build the command
 		let mut cmd = Command::new(&self.config.cmd);
 		if let Some(ref dir) = self.config.current_dir {
@@ -41,7 +42,6 @@ impl ClientStdioTransport {
 
 		// -- STDERR  (line by line)
 		// Read the child_stderr and send them via stdout_tx to stdout_rx
-		let stderr_tx = stdio_trx.stderr_tx();
 		let stderr_handle = tokio::spawn(async move {
 			let reader = BufReader::new(child_stderr);
 			let mut lines = reader.lines();
@@ -49,8 +49,7 @@ impl ClientStdioTransport {
 			loop {
 				match lines.next_line().await {
 					Ok(Some(line)) => {
-						println!("->> DEBUG STDERR: {line}");
-						if let Err(err) = stderr_tx.send(line).await {
+						if let Err(err) = err_tx.send(line).await {
 							eprintln!("ERROR while sending stderr line. Cause: {err}");
 							// Decide if the task should terminate on send error
 							break;
@@ -66,12 +65,11 @@ impl ClientStdioTransport {
 					}
 				}
 			}
-			println!("\n->> STDERR Task Ended\n");
+			println!("\nSTDERR Task Ended\n");
 		});
 
 		// -- STDOUT (line by line)
 		// Read the  child_stdout and send them via stdout_tx to stdout_rx
-		let stdout_tx = stdio_trx.out_tx();
 		let stdout_handle = tokio::spawn(async move {
 			let reader = BufReader::new(child_stdout);
 			let mut lines = reader.lines();
@@ -79,15 +77,12 @@ impl ClientStdioTransport {
 			loop {
 				match lines.next_line().await {
 					Ok(Some(line)) => {
-						println!("->> RECEIVED: {line}");
-						if let Err(err) = stdout_tx.send(line).await {
+						if let Err(err) = out_tx.send(line).await {
 							eprintln!("ERROR while sending stdout line. Cause: {err}");
 						}
 					}
 					Ok(None) => {
-						eprintln!("readline nothing");
-						// End of stream
-						break;
+						eprintln!("readline nothing .. end ");
 					}
 					Err(e) => {
 						eprintln!("ERROR reading stdout line: {}", e);
@@ -95,14 +90,13 @@ impl ClientStdioTransport {
 					}
 				}
 			}
-			println!("\n->> STDOUT Task Ended\n");
+			println!("\nSTDOUT Task Ended\n");
 		});
 
 		// -- STDIN
 		// listen the stdin_rx and forward them to child_stdin
-		let stdin_rx = stdio_trx.stdin_rx();
 		let stdin_handle = tokio::spawn(async move {
-			while let Ok(txt) = stdin_rx.recv().await {
+			while let Ok(txt) = in_rx.recv().await {
 				if let Err(err) = send_to_stdin(&mut child_stdin, &txt).await {
 					eprintln!("ERROR sending to stdin. Cause: {err}");
 					// Decide if the task should terminate on send error
@@ -114,40 +108,9 @@ impl ClientStdioTransport {
 
 		// -- Build the ClientTransportController
 		let stdio_handles = StdioHandles::new(child, stdin_handle, stdout_handle, stderr_handle);
-		self.inner = Some(Arc::new(ClientStdioTransportInner {
-			stdio_trx,
-			stdio_handles,
-		}));
+		self.inner = Some(Arc::new(ClientStdioTransportInner { stdio_handles }));
 
 		Ok(())
-	}
-}
-
-/// Send Event
-impl ClientStdioTransport {
-	/// Low level send
-	pub async fn send_to_server(&self, message: impl Into<String>) -> Result<()> {
-		let in_tx = self.try_stdio_trx()?.in_tx();
-
-		in_tx.send(message.into()).await?;
-
-		Ok(())
-	}
-}
-
-/// Assessors
-impl ClientStdioTransport {
-	fn try_inner(&self) -> Result<&ClientStdioTransportInner> {
-		let inner = self
-			.inner
-			.as_ref()
-			.ok_or_else(|| Error::custom("ClientStdioTransport not started"))?;
-		Ok(inner.as_ref())
-	}
-
-	fn try_stdio_trx(&self) -> Result<&ServerIoTrx> {
-		let inner = self.try_inner()?;
-		Ok(&inner.stdio_trx)
 	}
 }
 

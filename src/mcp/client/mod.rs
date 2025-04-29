@@ -1,9 +1,9 @@
 // region:    --- Modules
 
-mod server_io_trx;
+mod coms_trx;
 mod transport;
 
-use server_io_trx::*;
+use coms_trx::*;
 
 mod client_impl;
 mod error;
