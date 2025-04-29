@@ -1,3 +1,4 @@
+use crate::mcp::McpError;
 use derive_more::{Display, From};
 
 pub type Result<T> = core::result::Result<T, Error>;
@@ -8,6 +9,9 @@ pub enum Error {
 	#[from]
 	Custom(String),
 
+	#[from]
+	McpError(McpError),
+
 	// -- McpMessage Errors
 	McpMessageNotAnObject,
 	McpMessageInvalidStructure(String),
@@ -16,6 +20,13 @@ pub enum Error {
 		type_name: &'static str,
 		source: serde_json::Error,
 	},
+	McpTryIntoFail {
+		actual_type: &'static str,
+		target_type: &'static str,
+	},
+
+	// -- Sub Modules
+	Transport(String),
 }
 
 // region:    --- Custom

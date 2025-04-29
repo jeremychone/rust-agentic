@@ -1,3 +1,4 @@
+use crate::mcp::McpError;
 use derive_more::{Display, From};
 use flume::{RecvError, SendError};
 
@@ -9,25 +10,35 @@ pub enum Error {
 	#[from]
 	Custom(String),
 
-	SendError(String),
-	RecvError(RecvError),
+	CommSend(String),
+	CommRecv(RecvError),
 }
 
 // region:    --- Froms
 
 impl From<SendError<String>> for Error {
 	fn from(value: SendError<String>) -> Self {
-		Self::SendError(value.to_string())
+		Self::CommSend(value.to_string())
 	}
 }
 
 impl From<RecvError> for Error {
 	fn from(err: RecvError) -> Self {
-		Self::RecvError(err)
+		Self::CommRecv(err)
 	}
 }
 
 // endregion: --- Froms
+
+// region:    --- Intos
+
+impl From<Error> for crate::mcp::Error {
+	fn from(value: Error) -> Self {
+		crate::mcp::Error::Transport(value.to_string())
+	}
+}
+
+// endregion: --- Intos
 
 // region:    --- Custom
 

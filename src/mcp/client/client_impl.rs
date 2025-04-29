@@ -3,15 +3,15 @@ use crate::mcp::InitializeParams;
 use crate::mcp::IntoMcpRequest;
 use crate::mcp::McpMessage;
 use crate::mcp::McpRequest;
+use crate::mcp::McpResponse;
 use crate::mcp::PingParams;
-use crate::mcp::client::coms_trx::ClientTrx;
-use crate::mcp::client::coms_trx::CommRx;
-use crate::mcp::client::coms_trx::CommTx;
-use crate::mcp::client::coms_trx::new_trx_pair;
-use crate::mcp::client::transport::ClientTransport;
-use crate::mcp::client::{Error, Result};
+use crate::mcp::client::transport::new_trx_pair;
+use crate::mcp::client::transport::{ClientTransport, ClientTrx, CommRx, CommTx};
+use crate::mcp::{Error, Result};
 use dashmap::DashMap;
 use serde::Serialize;
+use serde::de::DeserializeOwned;
+use serde_json::Value;
 use std::sync::Arc;
 use tokio::sync::oneshot;
 
@@ -76,7 +76,7 @@ impl Client {
 		// send the initialize
 		let init_params = InitializeParams::from_client_info(self.name(), self.version());
 		let init_req = init_params.into_mcp_request();
-		self.send_request(init_req).await?;
+		self.send_request_raw(init_req).await?;
 
 		Ok(())
 	}
@@ -84,7 +84,7 @@ impl Client {
 
 /// Communications
 impl Client {
-	pub async fn send_request<P>(&self, req: impl Into<McpRequest<P>>) -> Result<McpMessage>
+	pub async fn send_request_raw<P>(&self, req: impl Into<McpRequest<P>>) -> Result<McpMessage>
 	where
 		P: Serialize,
 	{
@@ -104,6 +104,26 @@ impl Client {
 			Ok(res) => Ok(res),
 			Err(err) => Err(Error::custom_from_err(err)),
 		}
+	}
+
+	pub async fn send_request<REQ, P>(&self, req: REQ) -> crate::mcp::Result<McpResponse<REQ::McpResult>>
+	where
+		REQ: Into<McpRequest<P>>,
+		REQ: IntoMcpRequest<P>,
+		P: Serialize,
+	{
+		let req = req.into();
+		// Get the generic/raw McpMessage
+		let response = self.send_request_raw(req).await?;
+		// Get McpResponse
+		let response = response.try_into_response()?;
+
+		let id = response.id;
+		let result = response.result;
+
+		let result = serde_json::from_value::<REQ::McpResult>(result).map_err(Error::custom_from_err)?;
+
+		Ok(McpResponse { id, result })
 	}
 }
 

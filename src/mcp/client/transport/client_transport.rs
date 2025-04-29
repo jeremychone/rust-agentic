@@ -1,6 +1,6 @@
+use super::Result;
+use super::comm_trx::TransportTrx;
 use crate::mcp::client::ClientStdioTransportConfig;
-use crate::mcp::client::Result;
-use crate::mcp::client::coms_trx::TransportTrx;
 use crate::mcp::client::transport::ClientStdioTransport;
 use derive_more::From;
 

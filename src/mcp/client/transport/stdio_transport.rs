@@ -1,6 +1,7 @@
-use crate::mcp::client::coms_trx::TransportTrx;
+use super::comm_trx::TransportTrx;
+use super::{Error, Result};
+use crate::mcp::client::ClientStdioTransportConfig;
 use crate::mcp::client::transport::support::StdioHandles;
-use crate::mcp::client::{ClientStdioTransportConfig, Error, Result};
 use std::sync::Arc;
 use tokio::io::{AsyncBufReadExt as _, AsyncWriteExt as _, BufReader};
 use tokio::process::{ChildStdin, Command};

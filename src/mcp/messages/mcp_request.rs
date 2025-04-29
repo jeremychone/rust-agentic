@@ -1,5 +1,6 @@
 use crate::mcp::{Error, Result};
 use rpc_router::{RpcId, RpcRequest};
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error as DeError};
 use serde_json::Value;
 
@@ -36,7 +37,10 @@ impl<P: Serialize> McpRequest<P> {
 
 // region:    --- IntoRequest
 
-pub trait IntoMcpRequest<P>: Serialize + Sized + Into<McpRequest<P>> {
+pub trait IntoMcpRequest<P>: Serialize + Sized + Into<McpRequest<P>>
+where
+	Self::McpResult: DeserializeOwned,
+{
 	const METHOD: &'static str;
 	type McpResult;
 

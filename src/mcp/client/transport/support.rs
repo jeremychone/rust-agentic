@@ -1,4 +1,4 @@
-use crate::mcp::client::Result;
+use super::Result;
 use flume::{Receiver, Sender};
 use tokio::process::Child;
 use tokio::task::JoinHandle;

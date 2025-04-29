@@ -4,7 +4,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 
 /// Represents any valid MCP message (Request, Notification, Response, or Error).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, strum::IntoStaticStr)]
 pub enum McpMessage {
 	Request(McpRequest<Value>),
 	Notification(McpNotification<Value>),
@@ -27,6 +27,42 @@ impl McpMessage {
 	}
 	pub fn stringify_pretty(&self) -> Result<String> {
 		serde_json::to_string_pretty(&self).map_err(Error::custom_from_err)
+	}
+}
+
+/// Normalized into
+impl McpMessage {
+	pub fn try_into_request(self) -> Result<McpRequest<Value>> {
+		match self {
+			McpMessage::Request(req) => Ok(req),
+			McpMessage::Error(mcp_err) => Err(mcp_err.into()),
+			_ => Err(Error::McpTryIntoFail {
+				actual_type: self.into(),
+				target_type: "Request",
+			}),
+		}
+	}
+
+	pub fn try_into_response(self) -> Result<McpResponse<Value>> {
+		match self {
+			McpMessage::Response(resp) => Ok(resp),
+			McpMessage::Error(mcp_err) => Err(mcp_err.into()),
+			_ => Err(Error::McpTryIntoFail {
+				actual_type: self.into(),
+				target_type: "Response",
+			}),
+		}
+	}
+
+	pub fn try_into_notification(self) -> Result<McpNotification<Value>> {
+		match self {
+			McpMessage::Notification(noti) => Ok(noti),
+			McpMessage::Error(mcp_err) => Err(mcp_err.into()),
+			_ => Err(Error::McpTryIntoFail {
+				actual_type: self.into(),
+				target_type: "Notification",
+			}),
+		}
 	}
 }
 

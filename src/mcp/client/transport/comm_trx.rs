@@ -1,4 +1,4 @@
-use crate::mcp::client::Result;
+use super::Result;
 use flume::{Receiver, Sender};
 
 pub struct ClientTrx {
