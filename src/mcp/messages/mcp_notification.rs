@@ -1,3 +1,4 @@
+use crate::mcp::{Error, Result};
 use rpc_router::{RpcId, RpcNotification};
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error as DeError};
 use serde_json::Value;
@@ -9,6 +10,12 @@ pub struct McpNotification<P = Value> {
 
 	/// The Params
 	pub params: Option<P>,
+}
+
+impl<P: Serialize> McpNotification<P> {
+	pub fn stringify(&self) -> Result<String> {
+		serde_json::to_string(&self).map_err(Error::custom_from_err)
+	}
 }
 
 // region:    --- IntoMcpNotification
@@ -38,7 +45,7 @@ impl<P> Serialize for McpNotification<P>
 where
 	P: Serialize,
 {
-	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
 	where
 		S: Serializer,
 	{
@@ -63,7 +70,7 @@ impl<'de, P> Deserialize<'de> for McpNotification<P>
 where
 	P: Deserialize<'de>,
 {
-	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
 	where
 		D: Deserializer<'de>,
 	{

@@ -32,6 +32,7 @@ serde_with = { version = "3", features = ["macros", "base64"] }
 rpc-router = "=0.2.0-alpha.1" 
 # -- Others
 derive_more = { version = "2", features = ["from", "display"] }
+dashmap = "6.1.0"
 
 [dev-dependencies]
 value-ext = "0.1.2"

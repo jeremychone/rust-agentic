@@ -3,6 +3,7 @@ use crate::mcp::{
 	ListPromptsResult, ListResourceTemplatesResult, ListResourcesResult, ListRootsResult, ListToolsResult,
 	ReadResourceResult,
 };
+use crate::mcp::{Error, Result};
 use rpc_router::{RpcError, RpcId, RpcResponse, RpcSuccessResponse};
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error as DeError};
 use serde_json::Value;
@@ -18,13 +19,19 @@ pub struct McpResponse<R = Value> {
 	pub result: R,
 }
 
+impl<P: Serialize> McpResponse<P> {
+	pub fn stringify(&self) -> Result<String> {
+		serde_json::to_string(&self).map_err(Error::custom_from_err)
+	}
+}
+
 // region:    --- Custom De/Serialization
 
 impl<R> Serialize for McpResponse<R>
 where
 	R: Serialize,
 {
-	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
 	where
 		S: Serializer,
 	{
@@ -47,7 +54,7 @@ impl<'de, R> Deserialize<'de> for McpResponse<R>
 where
 	R: Deserialize<'de>,
 {
-	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
 	where
 		D: Deserializer<'de>,
 	{

@@ -1,4 +1,5 @@
 use crate::mcp::{Error, McpError, McpNotification, McpRequest, McpResponse, Result};
+use rpc_router::RpcId;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 
@@ -11,15 +12,18 @@ pub enum McpMessage {
 	Error(McpError),
 }
 
-impl std::str::FromStr for McpMessage {
-	type Err = Error;
+impl McpMessage {
+	pub fn rpc_id(&self) -> Option<&RpcId> {
+		match self {
+			McpMessage::Request(req) => Some(&req.id),
+			McpMessage::Notification(notif) => None,
+			McpMessage::Response(resp) => Some(&resp.id),
+			McpMessage::Error(err) => Some(&err.id),
+		}
+	}
 
-	fn from_str(value: &str) -> std::result::Result<Self, Self::Err> {
-		let value = serde_json::from_str(value).map_err(|e| Error::McpMessageDeserialization {
-			type_name: "McpMessage",
-			source: e,
-		})?;
-		McpMessage::from_value(value)
+	pub fn stringify(&self) -> Result<String> {
+		serde_json::to_string(&self).map_err(Error::custom_from_err)
 	}
 }
 
@@ -73,6 +77,18 @@ impl McpMessage {
 		} else {
 			Err(Error::McpMessageNotAnObject)
 		}
+	}
+}
+
+impl std::str::FromStr for McpMessage {
+	type Err = Error;
+
+	fn from_str(value: &str) -> std::result::Result<Self, Self::Err> {
+		let value = serde_json::from_str(value).map_err(|e| Error::McpMessageDeserialization {
+			type_name: "McpMessage",
+			source: e,
+		})?;
+		McpMessage::from_value(value)
 	}
 }
 
