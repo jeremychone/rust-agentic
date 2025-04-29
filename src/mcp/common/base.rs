@@ -1,5 +1,5 @@
+use crate::RpcId;
 use crate::mcp::{Cursor, GenericMeta, ProgressToken}; // Added GenericMeta import
-use rpc_router::RpcId;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use std::collections::HashMap;

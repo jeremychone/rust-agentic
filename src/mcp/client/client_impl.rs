@@ -10,7 +10,7 @@ use crate::mcp::client::coms_trx::new_trx_pair;
 use crate::mcp::client::transport::ClientTransport;
 use crate::mcp::client::{Error, Result};
 use dashmap::DashMap;
-use rpc_router::RpcId;
+use crate::RpcId;
 use serde::Serialize;
 use std::sync::Arc;
 use tokio::sync::oneshot;

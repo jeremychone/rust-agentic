@@ -1,7 +1,7 @@
 use crate::mcp::{
 	ClientCapabilities, GenericMeta, Implementation, IntoMcpRequest, McpRequest, RequestMeta, ServerCapabilities,
 };
-use rpc_router::RpcId;
+use crate::RpcId;
 use serde::{Deserialize, Serialize};
 use serde_json::Value; // Added for potential future _meta content
 

@@ -1,5 +1,5 @@
+use crate::RpcId;
 use crate::mcp::{GenericMeta, IntoMcpNotification, McpNotification};
-use rpc_router::RpcId;
 use serde::{Deserialize, Serialize};
 
 // region:    --- CancelledNotification

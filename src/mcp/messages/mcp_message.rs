@@ -1,5 +1,5 @@
+use crate::RpcId;
 use crate::mcp::{Error, McpError, McpNotification, McpRequest, McpResponse, Result};
-use rpc_router::RpcId;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 
