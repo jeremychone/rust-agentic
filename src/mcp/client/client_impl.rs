@@ -7,6 +7,7 @@ use crate::mcp::McpResponse;
 use crate::mcp::PingParams;
 use crate::mcp::client::transport::new_trx_pair;
 use crate::mcp::client::transport::{ClientTransport, ClientTrx, CommRx, CommTx};
+use crate::mcp::support::truncate;
 use crate::mcp::{Error, Result};
 use dashmap::DashMap;
 use serde::Serialize;
@@ -14,6 +15,9 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 use std::sync::Arc;
 use tokio::sync::oneshot;
+use tracing::debug;
+use tracing::error;
+use tracing::warn;
 
 type OneShotRes = oneshot::Sender<McpMessage>;
 
@@ -96,6 +100,8 @@ impl Client {
 		self.inner.res_queue.insert(rpc_id, tx);
 
 		// -- Send the message
+		let rpc_id = &req.id;
+		debug!(rpc_id = %rpc_id, "Sending RPC Request");
 		let msg = serde_json::to_string(&req).map_err(Error::custom_from_err)?;
 		self.try_in_tx()?.send(msg).await?;
 
@@ -166,28 +172,31 @@ impl Client {
 				match out_rx.recv().await {
 					Ok(msg) => {
 						let Ok(mcp_message) = serde_json::from_str::<McpMessage>(&msg) else {
-							println!("ERROR Parsing received McpMessage {msg}.");
+							error!(message = %msg, "Parsing received McpMessage");
 							continue;
 						};
 						match mcp_message.rpc_id() {
-							Some(rpc_id) => match res_queue.remove(rpc_id) {
-								Some((_, one_shot)) => {
-									one_shot.send(mcp_message);
+							Some(rpc_id) => {
+								debug!(rpc_id = %rpc_id, "Received RPC Response");
+								match res_queue.remove(rpc_id) {
+									Some((_, one_shot)) => {
+										one_shot.send(mcp_message);
+									}
+									None => {
+										let payload = always_to_string(&mcp_message);
+										error!(rpc_id = %rpc_id, payload_excerpt = %truncate(&payload, 256), "No matching request that id")
+									}
 								}
-								None => {
-									let val = always_to_string(&mcp_message);
-									println!("No matching request for id: {rpc_id} - {val}")
-								}
-							},
+							}
 							None => {
 								// no id, just print for now
-								let val = always_to_string(&mcp_message);
-								println!("<<- not a ided message: {val}")
+								let payload = always_to_string(&mcp_message);
+								warn!(payload = %payload, "No rpc_id, should be a notifications. Not processed for now (will be in future release)");
 							}
 						}
 					}
 					Err(e) => {
-						println!("Error receiving out_rx message: {:?}", e);
+						error!(%e, "Receiving out_rx message");
 						break;
 					}
 				}
@@ -201,9 +210,9 @@ impl Client {
 		tokio::spawn(async move {
 			loop {
 				match err_rx.recv().await {
-					Ok(msg) => println!("ERR: {}", msg),
+					Ok(msg) => warn!(io_err = %msg,"io_err"),
 					Err(e) => {
-						println!("Error receiving err_rx message: {:?}", e);
+						error!(%e, "err_rx error");
 						break;
 					}
 				}

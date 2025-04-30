@@ -2,10 +2,11 @@ use super::comm_trx::TransportTrx;
 use super::{Error, Result};
 use crate::mcp::client::ClientStdioTransportConfig;
 use crate::mcp::client::transport::support::StdioHandles;
+use crate::mcp::support::truncate;
 use std::sync::Arc;
 use tokio::io::{AsyncBufReadExt as _, AsyncWriteExt as _, BufReader};
 use tokio::process::{ChildStdin, Command};
-use tracing::{debug, error};
+use tracing::{debug, error, info};
 
 pub struct ClientStdioTransport {
 	config: Arc<ClientStdioTransportConfig>,
@@ -67,7 +68,7 @@ impl ClientStdioTransport {
 					}
 				}
 			}
-			println!("\nSTDERR Task Ended\n");
+			info!("STDERR Task Ended");
 		});
 
 		// -- STDOUT (line by line)
@@ -79,20 +80,21 @@ impl ClientStdioTransport {
 			loop {
 				match lines.next_line().await {
 					Ok(Some(line)) => {
+						debug!(payload_excerpt = %truncate(&line, 64), "message received");
 						if let Err(err) = out_tx.send(line).await {
-							eprintln!("ERROR while sending stdout line. Cause: {err}");
+							error!(%err, "while sending stdout line");
 						}
 					}
 					Ok(None) => {
-						eprintln!("readline nothing .. end ");
+						info!("stdout readline nothing .. end ");
 					}
 					Err(e) => {
-						eprintln!("ERROR reading stdout line: {}", e);
+						error!("Error reading stdout line: {}", e);
 						break;
 					}
 				}
 			}
-			println!("\nSTDOUT Task Ended\n");
+			info!("STDOUT Task Ended");
 		});
 
 		// -- STDIN
@@ -100,12 +102,12 @@ impl ClientStdioTransport {
 		let stdin_handle = tokio::spawn(async move {
 			while let Ok(txt) = in_rx.recv().await {
 				if let Err(err) = send_to_stdin(&mut child_stdin, &txt).await {
-					eprintln!("ERROR sending to stdin. Cause: {err}");
+					error!("ERROR sending to stdin. Cause: {err}");
 					// Decide if the task should terminate on send error
 					break;
 				}
 			}
-			println!("\nSTDIN Task Ended\n");
+			info!("STDIN Task Ended");
 		});
 
 		// -- Build the ClientTransportController
@@ -130,23 +132,23 @@ impl From<ClientStdioTransportConfig> for ClientStdioTransport {
 // region:    --- Support
 
 async fn send_to_stdin(child_stdin: &mut ChildStdin, payload: &str) -> Result<()> {
-	debug!(payload = %payload, "sending message");
+	debug!(payload_excerpt = %truncate(payload, 64), "sending message");
 
 	// 1. Write payload asynchronously (DO NOT re-serialize)
 	if let Err(e) = child_stdin.write_all(payload.as_bytes()).await {
-		error!(%e, payload = %payload, "failed to write to stdin");
+		error!(%e, payload_excerpt = %truncate(payload, 256), "failed to write to stdin");
 		// Return an error to potentially stop the STDIN loop
 		return Err(Error::custom(format!("Error writing payload to stdin: {}", e)));
 	}
 
 	// 2. Add a newline asynchronously
 	if let Err(e) = child_stdin.write_all(b"\n").await {
-		error!(%e, payload = %payload, "failed to write new line to stdin");
+		error!(%e, payload_excerpt = %truncate(payload, 256), "failed to write new line to stdin");
 		return Err(Error::custom(format!("Error writing newline to stdin: {}", e)));
 	}
 	// 3. Flush the stdin buffer async
 	if let Err(e) = child_stdin.flush().await {
-		error!(%e, payload = %payload, "error flushing");
+		error!(%e, payload_excerpt = %truncate(payload, 256), "error flushing");
 		return Err(Error::custom(format!("Error flushing stdin: {}", e)));
 	}
 	Ok(())
