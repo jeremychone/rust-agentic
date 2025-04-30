@@ -14,7 +14,20 @@ use serde::{Deserialize, Serialize};
 pub struct ResourceListChangedNotificationParams {
 	#[serde(rename = "_meta")]
 	pub meta: Option<GenericMeta>,
-} // No parameters
+}
+
+/// Builders
+impl ResourceListChangedNotificationParams {
+	/// Same as default (for API consistency)
+	pub fn new() -> Self {
+		Self::default()
+	}
+
+	pub fn with_meta(mut self, meta: GenericMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+}
 
 impl IntoMcpNotification for ResourceListChangedNotificationParams {
 	const METHOD: &'static str = "notifications/resources/list_changed";
@@ -40,6 +53,21 @@ pub struct ResourceUpdatedNotificationParams {
 	/// Assuming URI is represented as a String. Consider using a dedicated URI type if needed.
 	/// `@format uri` from schema
 	pub uri: String,
+}
+
+/// Builders
+impl ResourceUpdatedNotificationParams {
+	pub fn new(uri: impl Into<String>) -> Self {
+		Self {
+			meta: None,
+			uri: uri.into(),
+		}
+	}
+
+	pub fn with_meta(mut self, meta: GenericMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
 }
 
 impl IntoMcpNotification for ResourceUpdatedNotificationParams {

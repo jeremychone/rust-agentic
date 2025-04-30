@@ -34,6 +34,40 @@ pub struct Resource {
 	pub size: Option<i64>,
 }
 
+/// Builders
+impl Resource {
+	pub fn new(uri: impl Into<String>, name: impl Into<String>) -> Self {
+		Self {
+			uri: uri.into(),
+			name: name.into(),
+			description: None,
+			mime_type: None,
+			annotations: None,
+			size: None,
+		}
+	}
+
+	pub fn with_description(mut self, description: impl Into<String>) -> Self {
+		self.description = Some(description.into());
+		self
+	}
+
+	pub fn with_mime_type(mut self, mime_type: impl Into<String>) -> Self {
+		self.mime_type = Some(mime_type.into());
+		self
+	}
+
+	pub fn with_annotations(mut self, annotations: Annotations) -> Self {
+		self.annotations = Some(annotations);
+		self
+	}
+
+	pub fn with_size(mut self, size: i64) -> Self {
+		self.size = Some(size);
+		self
+	}
+}
+
 /// A template description for resources available on the server.
 ///
 /// TS Ref: `ResourceTemplate`
@@ -61,7 +95,37 @@ pub struct ResourceTemplate {
 	pub annotations: Option<Annotations>,
 }
 
+/// Builders
+impl ResourceTemplate {
+	pub fn new(uri_template: impl Into<String>, name: impl Into<String>) -> Self {
+		Self {
+			uri_template: uri_template.into(),
+			name: name.into(),
+			description: None,
+			mime_type: None,
+			annotations: None,
+		}
+	}
+
+	pub fn with_description(mut self, description: impl Into<String>) -> Self {
+		self.description = Some(description.into());
+		self
+	}
+
+	pub fn with_mime_type(mut self, mime_type: impl Into<String>) -> Self {
+		self.mime_type = Some(mime_type.into());
+		self
+	}
+
+	pub fn with_annotations(mut self, annotations: Annotations) -> Self {
+		self.annotations = Some(annotations);
+		self
+	}
+}
+
 /// The contents of a specific resource or sub-resource.
+///
+/// JC-NOTE: Not sure why the TS Spec had a 's' on this one. Only one content
 ///
 /// TS Ref: `ResourceContents`
 #[serde_as]
@@ -116,4 +180,19 @@ pub struct Root {
 	/// identifier for the root, which may be useful for display purposes or for
 	/// referencing the root in other parts of the application.
 	pub name: Option<String>,
+}
+
+/// Builders
+impl Root {
+	pub fn new(uri: impl Into<String>) -> Self {
+		Self {
+			uri: uri.into(),
+			name: None,
+		}
+	}
+
+	pub fn with_name(mut self, name: impl Into<String>) -> Self {
+		self.name = Some(name.into());
+		self
+	}
 }

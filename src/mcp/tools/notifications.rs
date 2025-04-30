@@ -12,7 +12,19 @@ use serde::{Deserialize, Serialize};
 pub struct ToolListChangedNotificationParams {
 	#[serde(rename = "_meta")]
 	pub meta: Option<GenericMeta>,
-} // No parameters
+}
+
+/// Builders
+impl ToolListChangedNotificationParams {
+	pub fn new() -> Self {
+		Self::default()
+	}
+
+	pub fn with_meta(mut self, meta: GenericMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+}
 
 impl IntoMcpNotification for ToolListChangedNotificationParams {
 	const METHOD: &'static str = "notifications/tools/list_changed";
@@ -21,3 +33,4 @@ impl IntoMcpNotification for ToolListChangedNotificationParams {
 pub type ToolListChangedNotification = McpNotification<ToolListChangedNotificationParams>;
 
 // endregion: --- ToolListChangedNotification
+

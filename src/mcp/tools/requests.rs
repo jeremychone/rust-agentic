@@ -1,5 +1,7 @@
-use super::types::Tool; // Import Tool from the same module tree
-use crate::mcp::{Cursor, GenericMeta, IntoMcpRequest, McpRequest, MessageContent, PaginationParams, RequestMeta};
+use super::types::Tool;
+use crate::mcp::{
+	Cursor, GenericMeta, IntoMcpRequest, McpRequest, MessageContent, PaginationParams, ProgressToken, RequestMeta,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::skip_serializing_none;
@@ -20,6 +22,29 @@ pub struct ListToolsParams {
 	/// Cursor for pagination
 	#[serde(flatten)]
 	pub pagination: PaginationParams,
+}
+
+/// Builders
+impl ListToolsParams {
+	/// Same as default (for API consistency)
+	pub fn new() -> Self {
+		Self::default()
+	}
+
+	pub fn with_meta(mut self, meta: RequestMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+
+	pub fn with_pagination(mut self, pagination: PaginationParams) -> Self {
+		self.pagination = pagination;
+		self
+	}
+
+	pub fn with_cursor(mut self, cursor: impl Into<Cursor>) -> Self {
+		self.pagination.cursor = Some(cursor.into());
+		self
+	}
 }
 
 impl IntoMcpRequest<ListToolsParams> for ListToolsParams {
@@ -68,7 +93,7 @@ pub struct CallToolParams {
 	pub arguments: Option<HashMap<String, Value>>,
 }
 
-/// Constructors / Builders
+/// Builders
 impl CallToolParams {
 	pub fn new(name: impl Into<String>) -> Self {
 		Self {
@@ -78,11 +103,25 @@ impl CallToolParams {
 		}
 	}
 
-	pub fn add_argument(mut self, name: impl Into<String>, value: impl Into<Value>) -> Self {
-		let name = name.into();
-		let value = value.into();
+	pub fn with_meta(mut self, meta: RequestMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
 
-		self.arguments.get_or_insert_with(HashMap::new).insert(name, value);
+	pub fn with_progress_token(mut self, progress_token: impl Into<ProgressToken>) -> Self {
+		self.meta.get_or_insert_with(RequestMeta::default).progress_token = Some(progress_token.into());
+		self
+	}
+
+	pub fn with_arguments(mut self, arguments: HashMap<String, Value>) -> Self {
+		self.arguments = Some(arguments);
+		self
+	}
+
+	pub fn append_argument(mut self, name: impl Into<String>, value: impl Into<Value>) -> Self {
+		self.arguments
+			.get_or_insert_with(HashMap::new)
+			.insert(name.into(), value.into());
 
 		self
 	}

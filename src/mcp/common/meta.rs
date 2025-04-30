@@ -2,6 +2,8 @@ use crate::mcp::ProgressToken;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
+// region:    --- GenericMeta
+
 /// Metadata attachable to a notification's `_meta` field.
 ///
 /// NOTE: For now, we have the Rust representation with progres_token and the extra.
@@ -12,8 +14,19 @@ use serde_json::{Map, Value};
 pub struct GenericMeta {
 	/// Allow arbitrary other metadata.
 	#[serde(flatten)]
-	pub inner: Map<String, Value>,
+	pub inner: Option<Map<String, Value>>,
 }
+
+impl GenericMeta {
+	pub fn append(mut self, name: impl Into<String>, value: impl Into<Value>) -> Self {
+		self.inner.get_or_insert_with(Map::new).insert(name.into(), value.into());
+		self
+	}
+}
+
+// endregion: --- GenericMeta
+
+// region:    --- RequestMeta
 
 /// Metadata attachable to a request's `_meta` field.
 ///
@@ -28,5 +41,25 @@ pub struct RequestMeta {
 
 	/// Allow arbitrary other metadata.
 	#[serde(flatten)]
-	pub extra: Map<String, Value>,
+	pub extra: Option<Map<String, Value>>,
 }
+
+/// Builders
+impl RequestMeta {
+	pub fn with_progress_token(mut self, token: impl Into<ProgressToken>) -> Self {
+		self.progress_token = Some(token.into());
+		self
+	}
+
+	pub fn with_extra(mut self, extra: Map<String, Value>) -> Self {
+		self.extra = Some(extra);
+		self
+	}
+
+	pub fn append(mut self, name: impl Into<String>, value: impl Into<Value>) -> Self {
+		self.extra.get_or_insert_with(Map::new).insert(name.into(), value.into());
+		self
+	}
+}
+
+// endregion: --- RequestMeta

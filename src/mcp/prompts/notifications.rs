@@ -12,7 +12,20 @@ use serde::{Deserialize, Serialize};
 pub struct PromptListChangedNotificationParams {
 	#[serde(rename = "_meta")]
 	pub meta: Option<GenericMeta>,
-} // No parameters
+}
+
+/// Builders
+impl PromptListChangedNotificationParams {
+	/// Same as default (for API consistency)
+	pub fn new() -> Self {
+		Self::default()
+	}
+
+	pub fn with_meta(mut self, meta: GenericMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+}
 
 impl IntoMcpNotification for PromptListChangedNotificationParams {
 	const METHOD: &'static str = "notifications/prompts/list_changed";
@@ -21,3 +34,4 @@ impl IntoMcpNotification for PromptListChangedNotificationParams {
 pub type PromptListChangedNotification = McpNotification<PromptListChangedNotificationParams>;
 
 // endregion: --- PromptListChangedNotification
+

@@ -1,5 +1,5 @@
-use super::types::{Resource, ResourceContents, ResourceTemplate}; // Updated imports
-use crate::mcp::{Cursor, GenericMeta, IntoMcpRequest, PaginationParams, RequestMeta}; // Adjusted common imports
+use super::types::{Resource, ResourceContents, ResourceTemplate};
+use crate::mcp::{Cursor, GenericMeta, IntoMcpRequest, PaginationParams, RequestMeta};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::skip_serializing_none;
@@ -19,6 +19,29 @@ pub struct ListResourcesParams {
 	/// Cursor for pagination
 	#[serde(flatten)]
 	pub pagination: PaginationParams,
+}
+
+/// Builders
+impl ListResourcesParams {
+	/// Same as default (for API consistency)
+	pub fn new() -> Self {
+		Self::default()
+	}
+
+	pub fn with_meta(mut self, meta: RequestMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+
+	pub fn with_pagination(mut self, pagination: PaginationParams) -> Self {
+		self.pagination = pagination;
+		self
+	}
+
+	pub fn with_cursor(mut self, cursor: impl Into<Cursor>) -> Self {
+		self.pagination.cursor = Some(cursor.into());
+		self
+	}
 }
 
 impl IntoMcpRequest<ListResourcesParams> for ListResourcesParams {
@@ -64,6 +87,29 @@ pub struct ListResourceTemplatesParams {
 	pub pagination: PaginationParams,
 }
 
+/// Builders
+impl ListResourceTemplatesParams {
+	/// Same as default (for API consistency)
+	pub fn new() -> Self {
+		Self::default()
+	}
+
+	pub fn with_meta(mut self, meta: RequestMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+
+	pub fn with_pagination(mut self, pagination: PaginationParams) -> Self {
+		self.pagination = pagination;
+		self
+	}
+
+	pub fn with_cursor(mut self, cursor: impl Into<Cursor>) -> Self {
+		self.pagination.cursor = Some(cursor.into());
+		self
+	}
+}
+
 impl IntoMcpRequest<ListResourceTemplatesParams> for ListResourceTemplatesParams {
 	const METHOD: &'static str = "resources/templates/list";
 	type McpResult = ListResourceTemplatesResult;
@@ -78,7 +124,7 @@ impl IntoMcpRequest<ListResourceTemplatesParams> for ListResourceTemplatesParams
 pub struct ListResourceTemplatesResult {
 	/// Optional metadata
 	#[serde(rename = "_meta")]
-	pub meta: Option<GenericMeta>, // Corrected meta type
+	pub meta: Option<GenericMeta>,
 
 	/// An opaque token representing the pagination position after the last returned result.
 	/// If present, there may be more results available.
@@ -107,6 +153,21 @@ pub struct ReadResourceParams {
 	pub uri: String,
 }
 
+/// Builders
+impl ReadResourceParams {
+	pub fn new(uri: impl Into<String>) -> Self {
+		Self {
+			meta: None,
+			uri: uri.into(),
+		}
+	}
+
+	pub fn with_meta(mut self, meta: RequestMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+}
+
 impl IntoMcpRequest<ReadResourceParams> for ReadResourceParams {
 	const METHOD: &'static str = "resources/read";
 	type McpResult = ReadResourceResult;
@@ -121,7 +182,7 @@ impl IntoMcpRequest<ReadResourceParams> for ReadResourceParams {
 pub struct ReadResourceResult {
 	/// Optional metadata
 	#[serde(rename = "_meta")]
-	pub meta: Option<GenericMeta>, // Corrected meta type
+	pub meta: Option<GenericMeta>,
 
 	/// The contents of the resource
 	pub contents: Vec<ResourceContents>,
@@ -146,12 +207,25 @@ pub struct SubscribeParams {
 	pub uri: String,
 }
 
+/// Builders
+impl SubscribeParams {
+	pub fn new(uri: impl Into<String>) -> Self {
+		Self {
+			meta: None,
+			uri: uri.into(),
+		}
+	}
+
+	pub fn with_meta(mut self, meta: RequestMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+}
+
 impl IntoMcpRequest<SubscribeParams> for SubscribeParams {
 	const METHOD: &'static str = "resources/subscribe";
 	type McpResult = ();
 }
-
-// Note: No specific result type is defined for SubscribeRequest - it uses EmptyResult
 
 // endregion: --- SubscribeRequest
 
@@ -173,11 +247,24 @@ pub struct UnsubscribeParams {
 	pub uri: String,
 }
 
+/// Builders
+impl UnsubscribeParams {
+	pub fn new(uri: impl Into<String>) -> Self {
+		Self {
+			meta: None,
+			uri: uri.into(),
+		}
+	}
+
+	pub fn with_meta(mut self, meta: RequestMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+}
+
 impl IntoMcpRequest<UnsubscribeParams> for UnsubscribeParams {
 	const METHOD: &'static str = "resources/unsubscribe";
 	type McpResult = ();
 }
-
-// Note: No specific result type is defined for UnsubscribeRequest - it uses EmptyResult
 
 // endregion: --- UnsubscribeRequest

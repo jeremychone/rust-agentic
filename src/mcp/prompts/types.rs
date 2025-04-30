@@ -16,6 +16,13 @@ pub struct PromptMessage {
 	pub content: MessageContent,
 }
 
+/// Builders
+impl PromptMessage {
+	pub fn new(role: Role, content: MessageContent) -> Self {
+		Self { role, content }
+	}
+}
+
 /// Content types for messages (used in Prompts and Tool Calls).
 ///
 /// TS Ref: various content types (TextContent, ImageContent, AudioContent, EmbeddedResource)
@@ -77,6 +84,54 @@ pub enum MessageContent {
 	},
 }
 
+/// Builders / Constructors
+impl MessageContent {
+	/// Creates a new Text MessageContent.
+	pub fn new_text(text: impl Into<String>) -> Self {
+		Self::Text {
+			text: text.into(),
+			annotations: None,
+		}
+	}
+
+	/// Creates a new Image MessageContent.
+	pub fn new_image(data: Vec<u8>, mime_type: impl Into<String>) -> Self {
+		Self::Image {
+			data,
+			mime_type: mime_type.into(),
+			annotations: None,
+		}
+	}
+
+	/// Creates a new Audio MessageContent.
+	pub fn new_audio(data: Vec<u8>, mime_type: impl Into<String>) -> Self {
+		Self::Audio {
+			data,
+			mime_type: mime_type.into(),
+			annotations: None,
+		}
+	}
+
+	/// Creates a new Resource MessageContent.
+	pub fn new_resource(resource: ResourceContents) -> Self {
+		Self::Resource {
+			resource,
+			annotations: None,
+		}
+	}
+
+	/// Adds annotations to any MessageContent variant.
+	pub fn with_annotations(mut self, annotations: Annotations) -> Self {
+		match &mut self {
+			Self::Text { annotations: a, .. } => *a = Some(annotations),
+			Self::Image { annotations: a, .. } => *a = Some(annotations),
+			Self::Audio { annotations: a, .. } => *a = Some(annotations),
+			Self::Resource { annotations: a, .. } => *a = Some(annotations),
+		}
+		self
+	}
+}
+
 /// Describes an argument that a prompt can accept.
 ///
 /// TS Ref: `PromptArgument`
@@ -92,6 +147,27 @@ pub struct PromptArgument {
 
 	/// Whether this argument must be provided.
 	pub required: Option<bool>,
+}
+
+/// Builders
+impl PromptArgument {
+	pub fn new(name: impl Into<String>) -> Self {
+		Self {
+			name: name.into(),
+			description: None,
+			required: None,
+		}
+	}
+
+	pub fn with_description(mut self, description: impl Into<String>) -> Self {
+		self.description = Some(description.into());
+		self
+	}
+
+	pub fn with_required(mut self, required: bool) -> Self {
+		self.required = Some(required);
+		self
+	}
 }
 
 /// A prompt or prompt template that the server offers.
@@ -111,6 +187,32 @@ pub struct Prompt {
 	pub arguments: Option<Vec<PromptArgument>>,
 }
 
+/// Builders
+impl Prompt {
+	pub fn new(name: impl Into<String>) -> Self {
+		Self {
+			name: name.into(),
+			description: None,
+			arguments: None,
+		}
+	}
+
+	pub fn with_description(mut self, description: impl Into<String>) -> Self {
+		self.description = Some(description.into());
+		self
+	}
+
+	pub fn with_arguments(mut self, arguments: Vec<PromptArgument>) -> Self {
+		self.arguments = Some(arguments);
+		self
+	}
+
+	pub fn append_argument(mut self, argument: PromptArgument) -> Self {
+		self.arguments.get_or_insert_with(Vec::new).push(argument);
+		self
+	}
+}
+
 /// Identifies a prompt for completion context.
 ///
 /// TS Ref: `PromptReference`
@@ -119,4 +221,11 @@ pub struct Prompt {
 pub struct PromptReference {
 	/// The name of the prompt or prompt template
 	pub name: String,
+}
+
+/// Builders
+impl PromptReference {
+	pub fn new(name: impl Into<String>) -> Self {
+		Self { name: name.into() }
+	}
 }

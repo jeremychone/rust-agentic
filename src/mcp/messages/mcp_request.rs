@@ -26,6 +26,7 @@ impl<P: Serialize + IntoMcpRequest<P>> McpRequest<P> {
 	}
 }
 
+/// Generic stringify implementation for any type that implement IntoMcpRequest
 impl<P: Serialize> McpRequest<P> {
 	pub fn stringify(&self) -> Result<String> {
 		serde_json::to_string(&self).map_err(Error::custom_from_err)

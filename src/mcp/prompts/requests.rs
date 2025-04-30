@@ -20,6 +20,29 @@ pub struct ListPromptsParams {
 	pub pagination: PaginationParams,
 }
 
+/// Builders
+impl ListPromptsParams {
+	/// Same as default (for API consistency)
+	pub fn new() -> Self {
+		Self::default()
+	}
+
+	pub fn with_meta(mut self, meta: RequestMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+
+	pub fn with_pagination(mut self, pagination: PaginationParams) -> Self {
+		self.pagination = pagination;
+		self
+	}
+
+	pub fn with_cursor(mut self, cursor: impl Into<Cursor>) -> Self {
+		self.pagination.cursor = Some(cursor.into());
+		self
+	}
+}
+
 impl IntoMcpRequest<ListPromptsParams> for ListPromptsParams {
 	const METHOD: &'static str = "prompts/list";
 	type McpResult = ListPromptsResult;
@@ -63,6 +86,34 @@ pub struct GetPromptParams {
 
 	/// Arguments to use for templating the prompt.
 	pub arguments: Option<HashMap<String, String>>,
+}
+
+/// Builders
+impl GetPromptParams {
+	pub fn new(name: impl Into<String>) -> Self {
+		Self {
+			meta: None,
+			name: name.into(),
+			arguments: None,
+		}
+	}
+
+	pub fn with_meta(mut self, meta: RequestMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+
+	pub fn with_arguments(mut self, arguments: HashMap<String, String>) -> Self {
+		self.arguments = Some(arguments);
+		self
+	}
+
+	pub fn append_argument(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+		self.arguments
+			.get_or_insert_with(HashMap::new)
+			.insert(name.into(), value.into());
+		self
+	}
 }
 
 impl IntoMcpRequest<GetPromptParams> for GetPromptParams {

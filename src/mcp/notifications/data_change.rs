@@ -17,7 +17,21 @@ use serde::{Deserialize, Serialize};
 pub struct RootsListChangedNotificationParams {
 	#[serde(rename = "_meta")]
 	pub meta: Option<GenericMeta>,
-} // No parameters
+}
+
+/// Builders
+impl RootsListChangedNotificationParams {
+	/// Same as default (for API consistency)
+	pub fn new() -> Self {
+		Self::default()
+	}
+
+	/// Sets the metadata for the notification.
+	pub fn with_meta(mut self, meta: GenericMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+}
 
 impl IntoMcpNotification for RootsListChangedNotificationParams {
 	const METHOD: &'static str = "notifications/roots/list_changed";

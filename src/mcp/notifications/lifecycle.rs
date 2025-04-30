@@ -21,13 +21,34 @@ pub struct CancelledNotificationParams {
 
 	/// The ID of the request to cancel.
 	///
-	/// NOTE: This is not the rpc_id of this Notification (as MCP notifications do not have )
+	/// NOTE: This is not the rpc_id of this Notification (as MCP notifications do not have)
 	///
 	/// This MUST correspond to the ID of a request previously issued in the same direction.
 	pub request_id: RpcId,
 
 	/// An optional string describing the reason for the cancellation. This MAY be logged or presented to the user.
 	pub reason: Option<String>,
+}
+
+/// Builders
+impl CancelledNotificationParams {
+	pub fn new(request_id: RpcId) -> Self {
+		Self {
+			meta: None,
+			request_id,
+			reason: None,
+		}
+	}
+
+	pub fn with_meta(mut self, meta: GenericMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+
+	pub fn with_reason(mut self, reason: impl Into<String>) -> Self {
+		self.reason = Some(reason.into());
+		self
+	}
 }
 
 impl IntoMcpNotification for CancelledNotificationParams {
@@ -49,6 +70,19 @@ pub struct InitializedNotificationParams {
 	#[serde(rename = "_meta")]
 	pub meta: Option<GenericMeta>,
 } // No parameters
+
+/// Builders
+impl InitializedNotificationParams {
+	/// Same as default (for API consistency)
+	pub fn new() -> Self {
+		Self::default()
+	}
+
+	pub fn with_meta(mut self, meta: GenericMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+}
 
 impl IntoMcpNotification for InitializedNotificationParams {
 	const METHOD: &'static str = "notifications/initialized";

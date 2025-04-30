@@ -36,6 +36,18 @@ pub struct SetLevelParams {
 	pub level: LoggingLevel,
 }
 
+/// Builders
+impl SetLevelParams {
+	pub fn new(level: LoggingLevel) -> Self {
+		Self { meta: None, level }
+	}
+
+	pub fn with_meta(mut self, meta: RequestMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+}
+
 impl IntoMcpRequest<SetLevelParams> for SetLevelParams {
 	const METHOD: &'static str = "logging/setLevel";
 	type McpResult = ();
@@ -63,10 +75,32 @@ pub struct LoggingMessageNotificationParams {
 	pub level: LoggingLevel,
 
 	/// An optional name of the logger issuing this message.
-	pub logger: Option<String>,
 
+	pub logger: Option<String>,
 	/// The data to be logged, such as a string message or an object. Any JSON serializable type is allowed here.
 	pub data: Value,
+}
+
+/// Builders
+impl LoggingMessageNotificationParams {
+	pub fn new(level: LoggingLevel, data: impl Into<Value>) -> Self {
+		Self {
+			meta: None,
+			level,
+			logger: None,
+			data: data.into(),
+		}
+	}
+
+	pub fn with_meta(mut self, meta: GenericMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+
+	pub fn with_logger(mut self, logger: impl Into<String>) -> Self {
+		self.logger = Some(logger.into());
+		self
+	}
 }
 
 impl IntoMcpNotification for LoggingMessageNotificationParams {

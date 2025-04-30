@@ -43,6 +43,34 @@ pub struct ProgressNotificationParams {
 	pub message: Option<String>,
 }
 
+/// Builders
+impl ProgressNotificationParams {
+	pub fn new(progress_token: impl Into<ProgressToken>, progress: i64) -> Self {
+		Self {
+			meta: None,
+			progress_token: progress_token.into(),
+			progress,
+			total: None,
+			message: None,
+		}
+	}
+
+	pub fn with_meta(mut self, meta: GenericMeta) -> Self {
+		self.meta = Some(meta);
+		self
+	}
+
+	pub fn with_total(mut self, total: i64) -> Self {
+		self.total = Some(total);
+		self
+	}
+
+	pub fn with_message(mut self, message: impl Into<String>) -> Self {
+		self.message = Some(message.into());
+		self
+	}
+}
+
 impl IntoMcpNotification for ProgressNotificationParams {
 	const METHOD: &'static str = "notifications/progress";
 }
@@ -50,3 +78,4 @@ impl IntoMcpNotification for ProgressNotificationParams {
 pub type ProgressNotification = McpNotification<ProgressNotificationParams>;
 
 // endregion: --- ProgressNotification
+
