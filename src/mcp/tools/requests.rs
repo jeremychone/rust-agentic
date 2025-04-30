@@ -1,7 +1,5 @@
 use super::types::Tool;
-use crate::mcp::{
-	Cursor, GenericMeta, IntoMcpRequest, McpRequest, MessageContent, PaginationParams, ProgressToken, RequestMeta,
-};
+use crate::mcp::{Cursor, GenericMeta, IntoMcpRequest, MessageContent, PaginationParams, ProgressToken, RequestMeta};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::skip_serializing_none;

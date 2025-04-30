@@ -1,10 +1,5 @@
-use crate::RpcId;
-use crate::mcp::{Cursor, GenericMeta, ProgressToken}; // Added GenericMeta import
+use crate::mcp::{Cursor, GenericMeta}; // Added GenericMeta import
 use serde::{Deserialize, Serialize};
-use serde_json::{Map, Value};
-use std::collections::HashMap;
-
-pub const JSONRPC_VERSION: &str = "2.0";
 
 /// Describes the name and version of an MCP implementation.
 /// Used in InitializeRequest and InitializeResult.

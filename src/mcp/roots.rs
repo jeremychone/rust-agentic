@@ -1,8 +1,7 @@
 //! Utility-related requests like logging control, autocompletion, and root listing.
 
-use crate::mcp::{GenericMeta, IntoMcpRequest, LoggingLevel, RequestMeta, Root};
+use crate::mcp::{GenericMeta, IntoMcpRequest, RequestMeta, Root};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use serde_with::skip_serializing_none;
 
 // region:    --- ListRootsRequest

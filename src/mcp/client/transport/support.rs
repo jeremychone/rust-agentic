@@ -1,10 +1,9 @@
-use super::Result;
-use flume::{Receiver, Sender};
 use tokio::process::Child;
 use tokio::task::JoinHandle;
 
 // region:    --- StdioHandles
 
+#[allow(unused)]
 pub(super) struct StdioHandles {
 	child: Child,
 	stdin: JoinHandle<()>,

@@ -1,6 +1,5 @@
-use crate::mcp::{Annotations, Role}; // Updated import
+use crate::mcp::Annotations; // Updated import
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use serde_with::base64::Base64;
 use serde_with::{serde_as, skip_serializing_none};
 

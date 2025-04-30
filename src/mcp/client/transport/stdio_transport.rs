@@ -14,6 +14,7 @@ pub struct ClientStdioTransport {
 }
 
 pub struct ClientStdioTransportInner {
+	#[allow(unused)]
 	stdio_handles: StdioHandles,
 }
 

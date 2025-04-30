@@ -16,7 +16,7 @@ impl McpMessage {
 	pub fn rpc_id(&self) -> Option<&RpcId> {
 		match self {
 			McpMessage::Request(req) => Some(&req.id),
-			McpMessage::Notification(notif) => None,
+			McpMessage::Notification(_notif) => None,
 			McpMessage::Response(resp) => Some(&resp.id),
 			McpMessage::Error(err) => Some(&err.id),
 		}
@@ -163,13 +163,8 @@ impl<'de> Deserialize<'de> for McpMessage {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::mcp::{
-		CallToolParams, CallToolResult, GenericMeta, IntoMcpNotification, IntoMcpRequest, MessageContent,
-		ProgressToken, RequestMeta,
-	};
 	use rpc_router::{RpcError, RpcId};
 	use serde_json::json;
-	use std::collections::HashMap;
 	use value_ext::JsonValueExt; // For easy value creation
 
 	type Result<T> = core::result::Result<T, Box<dyn std::error::Error>>; // Renamed to avoid clash

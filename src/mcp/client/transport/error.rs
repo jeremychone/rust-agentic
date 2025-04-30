@@ -1,4 +1,3 @@
-use crate::mcp::McpError;
 use derive_more::{Display, From};
 use flume::{RecvError, SendError};
 

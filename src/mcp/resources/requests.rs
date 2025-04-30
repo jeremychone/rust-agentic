@@ -1,7 +1,6 @@
 use super::types::{Resource, ResourceContents, ResourceTemplate};
 use crate::mcp::{Cursor, GenericMeta, IntoMcpRequest, PaginationParams, RequestMeta};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use serde_with::skip_serializing_none;
 
 // region:    --- ListResourcesRequest

@@ -1,5 +1,5 @@
 use crate::mcp::{Error, Result};
-use rpc_router::{RpcId, RpcNotification};
+use rpc_router::RpcNotification;
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error as DeError};
 use serde_json::Value;
 

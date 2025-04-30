@@ -4,15 +4,12 @@ use crate::mcp::IntoMcpRequest;
 use crate::mcp::McpMessage;
 use crate::mcp::McpRequest;
 use crate::mcp::McpResponse;
-use crate::mcp::PingParams;
 use crate::mcp::client::transport::new_trx_pair;
 use crate::mcp::client::transport::{ClientTransport, ClientTrx, CommRx, CommTx};
 use crate::mcp::support::truncate;
 use crate::mcp::{Error, Result};
 use dashmap::DashMap;
 use serde::Serialize;
-use serde::de::DeserializeOwned;
-use serde_json::Value;
 use std::sync::Arc;
 use tokio::sync::oneshot;
 use tracing::debug;
@@ -34,6 +31,7 @@ struct ClientInner {
 }
 
 struct CommInner {
+	#[allow(unused)]
 	transport: ClientTransport,
 	in_tx: CommTx,
 }
@@ -147,15 +145,6 @@ impl Client {
 
 /// Private Accessors
 impl Client {
-	fn transport(&self) -> Option<&ClientTransport> {
-		self.comm_inner.as_ref().map(|t| &t.transport)
-	}
-
-	fn try_transport(&self) -> Result<&ClientTransport> {
-		let transport = self.transport().ok_or("Client not connected (no transport)")?;
-		Ok(transport)
-	}
-
 	fn try_in_tx(&self) -> Result<&CommTx> {
 		let trans_inner = self.comm_inner.as_ref().ok_or("Client not connected (no transport inner")?;
 		let in_tx = &trans_inner.in_tx;
@@ -180,9 +169,10 @@ impl Client {
 							Some(rpc_id) => {
 								debug!(rpc_id = %rpc_id, "Received RPC Response");
 								match res_queue.remove(rpc_id) {
-									Some((_, one_shot)) => {
-										one_shot.send(mcp_message);
-									}
+									Some((rpc_id, one_shot)) => match one_shot.send(mcp_message) {
+										Ok(_) => (),
+										Err(_) => error!(rpc_id = %rpc_id, "Cannot send one_shot"),
+									},
 									None => {
 										let payload = always_to_string(&mcp_message);
 										error!(rpc_id = %rpc_id, payload_excerpt = %truncate(&payload, 256), "No matching request that id")
