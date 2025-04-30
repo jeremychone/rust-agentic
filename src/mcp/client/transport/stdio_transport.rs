@@ -5,6 +5,7 @@ use crate::mcp::client::transport::support::StdioHandles;
 use std::sync::Arc;
 use tokio::io::{AsyncBufReadExt as _, AsyncWriteExt as _, BufReader};
 use tokio::process::{ChildStdin, Command};
+use tracing::{debug, error};
 
 pub struct ClientStdioTransport {
 	config: Arc<ClientStdioTransportConfig>,
@@ -129,22 +130,23 @@ impl From<ClientStdioTransportConfig> for ClientStdioTransport {
 // region:    --- Support
 
 async fn send_to_stdin(child_stdin: &mut ChildStdin, payload: &str) -> Result<()> {
+	debug!(payload = %payload, "sending message");
+
 	// 1. Write payload asynchronously (DO NOT re-serialize)
-	println!("\nSENT TO STDIN: -{payload}-");
 	if let Err(e) = child_stdin.write_all(payload.as_bytes()).await {
-		eprintln!("Error writing payload to stdin: {}", e);
+		error!(%e, payload = %payload, "failed to write to stdin");
 		// Return an error to potentially stop the STDIN loop
 		return Err(Error::custom(format!("Error writing payload to stdin: {}", e)));
 	}
 
 	// 2. Add a newline asynchronously
 	if let Err(e) = child_stdin.write_all(b"\n").await {
-		eprintln!("Error writing newline to stdin: {}", e);
+		error!(%e, payload = %payload, "failed to write new line to stdin");
 		return Err(Error::custom(format!("Error writing newline to stdin: {}", e)));
 	}
 	// 3. Flush the stdin buffer async
 	if let Err(e) = child_stdin.flush().await {
-		eprintln!("Error flushing stdin: {}", e);
+		error!(%e, payload = %payload, "error flushing");
 		return Err(Error::custom(format!("Error flushing stdin: {}", e)));
 	}
 	Ok(())
