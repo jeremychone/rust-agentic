@@ -16,7 +16,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	// -- Create MCP Client
 	let mut client = Client::new("Demo Client", "0.1.0");
 	let transport = ClientStdioTransportConfig::new(
-		// cmd and args
+		// cmd and args (this MCP Server requires nodejs to be installed)
 		"npx",
 		["-y", "@modelcontextprotocol/server-puppeteer"],
 		None,

@@ -11,7 +11,7 @@
 
 The `agentic` crate in Rust provides essential building blocks for developing agentic applications and systems through an **ergonomic** API for core components such as MCP and Agent-to-Agent support.
 
-`version 0.0.3` is starting to have a solid representation of all the major MCP types and a first pass at the MCP Client interface for most MCP requests and responses. See [examples/c01-client-simple](examples/client-c01-simple).
+`version 0.0.3` is starting to have a solid representation of all the major MCP types and a first pass at the MCP Client interface for most MCP requests and responses. See [examples/c01-client-simple](examples/client-c01-simple.rs).
 
 ### Goal
 
