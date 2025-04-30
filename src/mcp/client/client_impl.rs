@@ -101,7 +101,8 @@ impl Client {
 
 		// -- Send the message
 		let rpc_id = &req.id;
-		debug!(rpc_id = %rpc_id, "Sending RPC Request");
+		let method = &req.method;
+		debug!(rpc_id = %rpc_id, method = %method, "Sending RPC Request");
 		let msg = serde_json::to_string(&req).map_err(Error::custom_from_err)?;
 		self.try_in_tx()?.send(msg).await?;
 

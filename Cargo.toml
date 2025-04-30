@@ -4,7 +4,7 @@ version = "0.0.3-WIP"
 edition = "2024"
 rust-version = "1.86"
 license = "MIT OR Apache-2.0"
-description = "Support library for building Agentic MCP and Agent2Agent-based services"
+description = "Support library for building Agentic MCP and Agent2Agent based systems"
 keywords = [
 	"MCP",
 	"agent",
@@ -38,4 +38,6 @@ dashmap = "6.1.0"
 strum = { version = "0.27", features = ["derive"] }
 
 [dev-dependencies]
+tracing-subscriber = "0.3.19"
 value-ext = "0.1.2"
+
