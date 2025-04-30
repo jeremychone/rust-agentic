@@ -68,6 +68,26 @@ pub struct CallToolParams {
 	pub arguments: Option<HashMap<String, Value>>,
 }
 
+/// Constructors / Builders
+impl CallToolParams {
+	pub fn new(name: impl Into<String>) -> Self {
+		Self {
+			meta: None,
+			name: name.into(),
+			arguments: None,
+		}
+	}
+
+	pub fn add_argument(mut self, name: impl Into<String>, value: impl Into<Value>) -> Self {
+		let name = name.into();
+		let value = value.into();
+
+		self.arguments.get_or_insert_with(HashMap::new).insert(name, value);
+
+		self
+	}
+}
+
 impl IntoMcpRequest<CallToolParams> for CallToolParams {
 	const METHOD: &'static str = "tools/call";
 	type McpResult = CallToolResult;

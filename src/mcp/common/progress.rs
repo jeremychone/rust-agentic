@@ -1,13 +1,16 @@
 use crate::mcp::{GenericMeta, IntoMcpNotification, McpNotification};
+use derive_more::From;
 use serde::{Deserialize, Serialize};
 
 /// A progress token, used to associate progress notifications with the original request.
 ///
 /// TS Ref: `ProgressToken`
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, From)]
 #[serde(untagged)]
 pub enum ProgressToken {
+	#[from(String, &str, &String)]
 	String(String),
+	#[from(i64, i32)]
 	Number(i64),
 }
 

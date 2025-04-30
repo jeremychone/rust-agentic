@@ -6,7 +6,7 @@ pub type Result<T> = core::result::Result<T, Error>;
 #[derive(Debug, From, Display)]
 #[display("{self:?}")]
 pub enum Error {
-	#[from]
+	#[from(String, &String, &str)]
 	Custom(String),
 
 	#[from]
@@ -38,12 +38,6 @@ impl Error {
 
 	pub fn custom(val: impl Into<String>) -> Self {
 		Self::Custom(val.into())
-	}
-}
-
-impl From<&str> for Error {
-	fn from(val: &str) -> Self {
-		Self::Custom(val.to_string())
 	}
 }
 
