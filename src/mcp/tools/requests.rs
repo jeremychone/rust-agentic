@@ -1,5 +1,5 @@
 use super::types::Tool; // Import Tool from the same module tree
-use crate::mcp::{Cursor, GenericMeta, IntoMcpRequest, MessageContent, PaginationParams, RequestMeta};
+use crate::mcp::{Cursor, GenericMeta, IntoMcpRequest, McpRequest, MessageContent, PaginationParams, RequestMeta};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::skip_serializing_none;

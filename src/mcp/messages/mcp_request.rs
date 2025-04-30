@@ -49,6 +49,7 @@ where
 	}
 }
 
+/// Blanket implementation for all params that implement IntoMcpRequest on themselves
 impl<P: Serialize + IntoMcpRequest<P>> From<P> for McpRequest<P> {
 	fn from(params: P) -> Self {
 		let id = RpcId::new_uuid_v7_base58();
@@ -59,6 +60,18 @@ impl<P: Serialize + IntoMcpRequest<P>> From<P> for McpRequest<P> {
 		}
 	}
 }
+
+/// Blanket implementation for all self McpRequest<P>
+/// This allow to pass Params or McpRequest<P> in the Client::send_request(...)
+/// e.g., impl IntoMcpRequest<ListToolsParams> for McpRequest<ListToolsParams>
+impl<P> IntoMcpRequest<P> for McpRequest<P>
+where
+	P: IntoMcpRequest<P>,
+{
+	const METHOD: &'static str = P::METHOD;
+	type McpResult = P::McpResult;
+}
+
 // endregion: --- IntoRequest
 
 // region:    --- Custom De/Serialization
