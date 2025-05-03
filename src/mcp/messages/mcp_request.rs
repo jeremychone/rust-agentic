@@ -62,9 +62,9 @@ impl<P: Serialize + IntoMcpRequest<P>> From<P> for McpRequest<P> {
 	}
 }
 
-/// Blanket implementation for all self McpRequest<P>
-/// This allow to pass Params or McpRequest<P> in the Client::send_request(...)
-/// e.g., impl IntoMcpRequest<ListToolsParams> for McpRequest<ListToolsParams>
+/// Blanket implementation for all self `McpRequest<P>`
+/// This allow to pass Params or `McpRequest<P>` in the `Client::send_request(...)`
+/// e.g., `impl IntoMcpRequest<ListToolsParams>` for `McpRequest<ListToolsParams>`
 impl<P> IntoMcpRequest<P> for McpRequest<P>
 where
 	P: IntoMcpRequest<P>,

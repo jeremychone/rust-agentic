@@ -5,7 +5,7 @@ use serde_json::Value;
 /// The severity of a log message.
 ///
 /// These map to syslog message severities, as specified in RFC-5424:
-/// https://datatracker.ietf.org/doc/html/rfc5424#section-6.2.1
+/// <https://datatracker.ietf.org/doc/html/rfc5424#section-6.2.1>
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum LoggingLevel {
@@ -75,7 +75,6 @@ pub struct LoggingMessageNotificationParams {
 	pub level: LoggingLevel,
 
 	/// An optional name of the logger issuing this message.
-
 	pub logger: Option<String>,
 	/// The data to be logged, such as a string message or an object. Any JSON serializable type is allowed here.
 	pub data: Value,
