@@ -4,6 +4,7 @@ use crate::mcp::IntoMcpRequest;
 use crate::mcp::McpMessage;
 use crate::mcp::McpRequest;
 use crate::mcp::McpResponse;
+use crate::mcp::client::IntoClientTransport;
 use crate::mcp::client::transport::new_trx_pair;
 use crate::mcp::client::transport::{ClientTransport, ClientTrx, CommRx, CommTx};
 use crate::mcp::support::truncate;
@@ -53,7 +54,10 @@ impl Client {
 		}
 	}
 
-	pub async fn connect(&mut self, transport: impl Into<ClientTransport>) -> Result<()> {
+	/// Connects the client using a transport configuration.
+	///
+	/// Accepts any type that implements `IntoClientTransport`, such as `ClientStdioTransportConfig`.
+	pub async fn connect(&mut self, transport_source: impl IntoClientTransport) -> Result<()> {
 		// Check not already connected
 		if self.comm_inner.is_some() {
 			return Err(
@@ -64,8 +68,10 @@ impl Client {
 		// -- Create the Trx Pair
 		let (client_trx, transport_trx) = new_trx_pair();
 
+		// Convert the input into the internal ClientTransport using the trait method
+		let mut transport: ClientTransport = transport_source.into_client_transport();
+
 		// Start the transport
-		let mut transport: ClientTransport = transport.into();
 		transport.start(transport_trx).await?;
 		let transport = transport; // no need to mut anymore
 
