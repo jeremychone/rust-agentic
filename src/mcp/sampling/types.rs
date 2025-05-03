@@ -17,6 +17,19 @@ pub struct ModelHint {
 	// Note: Does not capture arbitrary extra fields as per schema description.
 }
 
+/// Builders
+impl ModelHint {
+	/// Same as default (for API consistency)
+	pub fn new() -> Self {
+		Self::default()
+	}
+
+	pub fn with_name(mut self, name: impl Into<String>) -> Self {
+		self.name = Some(name.into());
+		self
+	}
+}
+
 /// The server's preferences for model selection, requested of the client during sampling.
 ///
 /// These preferences are always advisory. The client MAY ignore them.
@@ -39,6 +52,39 @@ pub struct ModelPreferences {
 	pub intelligence_priority: Option<f64>,
 }
 
+/// Builders
+impl ModelPreferences {
+	/// Same as default (for API consistency)
+	pub fn new() -> Self {
+		Self::default()
+	}
+
+	pub fn with_hints(mut self, hints: Vec<ModelHint>) -> Self {
+		self.hints = Some(hints);
+		self
+	}
+
+	pub fn append_hint(mut self, hint: ModelHint) -> Self {
+		self.hints.get_or_insert_with(Vec::new).push(hint);
+		self
+	}
+
+	pub fn with_cost_priority(mut self, priority: f64) -> Self {
+		self.cost_priority = Some(priority);
+		self
+	}
+
+	pub fn with_speed_priority(mut self, priority: f64) -> Self {
+		self.speed_priority = Some(priority);
+		self
+	}
+
+	pub fn with_intelligence_priority(mut self, priority: f64) -> Self {
+		self.intelligence_priority = Some(priority);
+		self
+	}
+}
+
 /// Text provided to or from an LLM.
 ///
 /// TS Ref: `TextContent`
@@ -51,6 +97,21 @@ pub struct TextContent {
 
 	/// Optional annotations for the client.
 	pub annotations: Option<Annotations>,
+}
+
+/// Builders
+impl TextContent {
+	pub fn new(text: impl Into<String>) -> Self {
+		Self {
+			text: text.into(),
+			annotations: None,
+		}
+	}
+
+	pub fn with_annotations(mut self, annotations: Annotations) -> Self {
+		self.annotations = Some(annotations);
+		self
+	}
 }
 
 /// An image provided to or from an LLM.
@@ -73,6 +134,22 @@ pub struct ImageContent {
 	pub annotations: Option<Annotations>,
 }
 
+/// Builders
+impl ImageContent {
+	pub fn new(data: Vec<u8>, mime_type: impl Into<String>) -> Self {
+		Self {
+			data,
+			mime_type: mime_type.into(),
+			annotations: None,
+		}
+	}
+
+	pub fn with_annotations(mut self, annotations: Annotations) -> Self {
+		self.annotations = Some(annotations);
+		self
+	}
+}
+
 /// Audio provided to or from an LLM.
 ///
 /// TS Ref: `AudioContent`
@@ -93,6 +170,22 @@ pub struct AudioContent {
 	pub annotations: Option<Annotations>,
 }
 
+/// Builders
+impl AudioContent {
+	pub fn new(data: Vec<u8>, mime_type: impl Into<String>) -> Self {
+		Self {
+			data,
+			mime_type: mime_type.into(),
+			annotations: None,
+		}
+	}
+
+	pub fn with_annotations(mut self, annotations: Annotations) -> Self {
+		self.annotations = Some(annotations);
+		self
+	}
+}
+
 /// Represents the content part of a `SamplingMessage`.
 /// Based on TS `SamplingMessage.content: TextContent | ImageContent | AudioContent`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -101,6 +194,31 @@ pub enum SamplingContent {
 	Text(TextContent),
 	Image(ImageContent),
 	Audio(AudioContent),
+}
+
+/// Builders / Constructors (for convenience, often direct construction is fine)
+impl SamplingContent {
+	pub fn new_text(text: impl Into<String>) -> Self {
+		Self::Text(TextContent::new(text))
+	}
+
+	pub fn new_image(data: Vec<u8>, mime_type: impl Into<String>) -> Self {
+		Self::Image(ImageContent::new(data, mime_type))
+	}
+
+	pub fn new_audio(data: Vec<u8>, mime_type: impl Into<String>) -> Self {
+		Self::Audio(AudioContent::new(data, mime_type))
+	}
+
+	/// Adds annotations to the inner content struct if applicable.
+	pub fn with_annotations(mut self, annotations: Annotations) -> Self {
+		match &mut self {
+			Self::Text(c) => c.annotations = Some(annotations),
+			Self::Image(c) => c.annotations = Some(annotations),
+			Self::Audio(c) => c.annotations = Some(annotations),
+		}
+		self
+	}
 }
 
 /// Describes a message issued to or received from an LLM API.
@@ -112,3 +230,13 @@ pub struct SamplingMessage {
 	pub role: Role,
 	pub content: SamplingContent,
 }
+
+/// Builders
+impl SamplingMessage {
+	pub fn new(role: Role, content: SamplingContent) -> Self {
+		Self { role, content }
+	}
+
+	// No specific 'with_' methods needed as fields are public and required at construction.
+}
+
