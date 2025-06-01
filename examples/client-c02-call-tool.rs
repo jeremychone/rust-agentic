@@ -1,5 +1,6 @@
 //! Simple way to call a MCP Tools
 //!
+//! With demo MCP Server: https://github.com/modelcontextprotocol/servers/tree/main/src/everything
 
 use agentic::mcp::CallToolParams;
 use agentic::mcp::client::{Client, ClientStdioTransportConfig};

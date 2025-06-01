@@ -1,5 +1,6 @@
 //! client-c01-simple - Basic MCP Client example
 //!
+//! With demo MCP Server: https://github.com/modelcontextprotocol/servers/tree/main/src/everything
 
 use agentic::mcp::ListToolsParams;
 use agentic::mcp::client::{Client, ClientStdioTransportConfig};
