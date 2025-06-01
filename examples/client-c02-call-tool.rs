@@ -1,7 +1,7 @@
-//! client-c01-simple - Basic MCP Client example
+//! Simple way to call a MCP Tools
 //!
 
-use agentic::mcp::ListToolsParams;
+use agentic::mcp::CallToolParams;
 use agentic::mcp::client::{Client, ClientStdioTransportConfig};
 
 #[tokio::main]
@@ -23,15 +23,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	// -- Connect
 	client.connect(transport).await?;
 
-	// -- List tools
-	let res = client.send_request(ListToolsParams::default()).await?;
+	// -- Call echo
+	// Build the params
+	let params = CallToolParams::new("echo").append_argument("message", "Hello Live Coding");
+	// Call
+	let res = client.send_request(params).await?;
+	println!("Calling echo tool:\n{res:#?}");
 
-	let list_tools = res.result;
-
-	// -- Print tool names
-	for tool in list_tools.tools.iter() {
-		println!("{}", tool.name);
-	}
+	// -- Call add
+	// Build the params
+	let params = CallToolParams::new("add")
+		//
+		.append_argument("a", 1)
+		.append_argument("b", 2.5);
+	let res = client.send_request(params).await?;
+	println!("Calling add tool:\n{res:#?}");
 
 	Ok(())
 }
