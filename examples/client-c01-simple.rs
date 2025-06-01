@@ -1,7 +1,5 @@
 //! client-c01-simple - Basic MCP Client example
 //!
-//! NOTE: For now, it uses the official `server-puppeteer`, but it might use a lighter one later.
-//!
 
 use agentic::mcp::ListToolsParams;
 use agentic::mcp::client::{Client, ClientStdioTransportConfig};
@@ -18,7 +16,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let transport = ClientStdioTransportConfig::new(
 		// cmd and args (this MCP Server requires nodejs to be installed)
 		"npx",
-		["-y", "@modelcontextprotocol/server-puppeteer"],
+		["-y", "@modelcontextprotocol/server-everything"],
 		None,
 	);
 
