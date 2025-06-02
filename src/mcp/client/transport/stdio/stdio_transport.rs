@@ -1,7 +1,6 @@
-use super::comm_trx::TransportTrx;
-use super::{Error, Result};
-use crate::mcp::client::ClientStdioTransportConfig;
+use crate::mcp::client::transport::stdio::stdio_config::ClientStdioTransportConfig;
 use crate::mcp::client::transport::support::StdioHandles;
+use crate::mcp::client::transport::{Error, Result, TransportTrx};
 use crate::mcp::support::truncate;
 use std::sync::Arc;
 use tokio::io::{AsyncBufReadExt as _, AsyncWriteExt as _, BufReader};
@@ -20,7 +19,7 @@ pub struct ClientStdioTransportInner {
 
 /// Lifecycle - start
 impl ClientStdioTransport {
-	pub(super) async fn start(&mut self, transport_trx: TransportTrx) -> Result<()> {
+	pub(crate) async fn start(&mut self, transport_trx: TransportTrx) -> Result<()> {
 		let TransportTrx { in_rx, out_tx, err_tx } = transport_trx;
 
 		// -- Build the command
