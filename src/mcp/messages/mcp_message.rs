@@ -151,7 +151,13 @@ impl<'de> Deserialize<'de> for McpMessage {
 		D: Deserializer<'de>,
 	{
 		// Step 1: Deserialize into a generic Value
-		let value = Value::deserialize(deserializer)?;
+		let value = match Value::deserialize(deserializer) {
+			Ok(value) => value,
+			Err(err) => {
+				//
+				return Err(err);
+			}
+		};
 
 		// Step 2: Use the dedicated from_value function
 		McpMessage::from_value(value).map_err(serde::de::Error::custom)

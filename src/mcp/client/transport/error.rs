@@ -11,6 +11,10 @@ pub enum Error {
 
 	CommSend(String),
 	CommRecv(RecvError),
+
+	// -- Externals
+	#[from]
+	Reqwest(reqwest::Error),
 }
 
 // region:    --- Froms

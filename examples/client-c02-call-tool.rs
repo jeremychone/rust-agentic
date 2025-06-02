@@ -7,10 +7,10 @@ use agentic::mcp::client::{Client, ClientStdioTransportConfig};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-	// tracing_subscriber::fmt()
-	// 	.with_max_level(tracing::Level::DEBUG)
-	// 	.without_time()
-	// 	.init();
+	tracing_subscriber::fmt()
+		.with_max_level(tracing::Level::WARN) // ERROR, WARN
+		.without_time()
+		.init();
 
 	// -- Create MCP Client
 	let mut client = Client::new("Demo Client", "0.1.0");

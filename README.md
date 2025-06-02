@@ -42,7 +42,7 @@ let list_tools = res.result;
 
 // -- Print tool names
 for tool in list_tools.tools.iter() {
-    println!("->> {}", tool.name);
+    println!(" {}", tool.name);
 }
 
 ```

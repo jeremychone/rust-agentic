@@ -1,5 +1,6 @@
 use crate::RpcId;
 use crate::mcp::InitializeParams;
+use crate::mcp::InitializeResult;
 use crate::mcp::IntoMcpRequest;
 use crate::mcp::McpMessage;
 use crate::mcp::McpRequest;
@@ -57,7 +58,10 @@ impl Client {
 	/// Connects the client using a transport configuration.
 	///
 	/// Accepts any type that implements `IntoClientTransport`, such as `ClientStdioTransportConfig`.
-	pub async fn connect(&mut self, transport_source: impl IntoClientTransport) -> Result<()> {
+	pub async fn connect(
+		&mut self,
+		transport_source: impl IntoClientTransport,
+	) -> Result<McpResponse<InitializeResult>> {
 		// Check not already connected
 		if self.comm_inner.is_some() {
 			return Err(
@@ -83,10 +87,9 @@ impl Client {
 
 		// send the initialize
 		let init_params = InitializeParams::from_client_info(self.name(), self.version());
-		let init_req = init_params.into_mcp_request();
-		self.send_request_raw(init_req).await?;
+		let res = self.send_request(init_params).await?;
 
-		Ok(())
+		Ok(res)
 	}
 }
 
@@ -209,7 +212,7 @@ impl Client {
 				match err_rx.recv().await {
 					Ok(msg) => warn!(io_err = %msg,"io_err"),
 					Err(e) => {
-						error!(%e, "err_rx error");
+						warn!(%e, "err_rx error");
 						break;
 					}
 				}

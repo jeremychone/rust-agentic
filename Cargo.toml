@@ -17,11 +17,12 @@ repository = "https://github.com/jeremychone/rust-agentic"
 
 [lints.rust]
 unsafe_code = "forbid"
-# unused = { level = "allow", priority = -1 } # For exploratory dev.
+unused = { level = "allow", priority = -1 } # For exploratory dev.
 
 [dependencies]
 # -- Async
 tokio = { version = "1", features = ["full"] }
+futures = "0.3"
 # -- Tracing
 tracing = { version = "0.1", features = ["default"] }
 # -- Json
@@ -30,6 +31,9 @@ serde_json = "1"
 serde_with = { version = "3", features = ["macros", "base64"] }
 # -- RPC
 rpc-router = "=0.2.0-alpha.1" 
+# -- Web
+reqwest = { version = "0.12.19", features = ["stream"]}
+eventsource-stream = "=0.2.3"
 # -- Event
 flume = "0.11.1"
 # -- Others
