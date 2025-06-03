@@ -6,16 +6,11 @@ use reqwest::ResponseBuilderExt;
 use reqwest::header::HeaderValue;
 use std::ops::Index;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 use tracing::{debug, error};
 
 pub struct ClientHttpTransport {
 	config: Arc<ClientHttpTransportConfig>,
-	inner: Option<Arc<ClientHttpTransportInner>>,
-}
-
-pub struct ClientHttpTransportInner {
-	// NOTE: Not sure how to capture it for now.
-	mcp_session_id: Option<String>,
 }
 
 /// Lifecyle - start
@@ -26,8 +21,11 @@ impl ClientHttpTransport {
 		// TODO: probably need add cookies support
 		let req_client = reqwest::ClientBuilder::new().build()?;
 
-		// -- Sending Request to Server
+		// -- Sending Request to Server (equivalent of std_in/stdout_out)
 		let config = self.config.clone();
+
+		let session_id_holder: Arc<Mutex<Option<String>>> = Arc::default();
+
 		tokio::spawn(async move {
 			while let Ok(txt) = in_rx.recv().await {
 				let header = HeaderValue::from_static("application/json");
@@ -38,13 +36,35 @@ impl ClientHttpTransport {
 					.header(reqwest::header::ACCEPT, "text/event-stream, application/json")
 					.body(txt.clone());
 
+				let session_holder_guard = session_id_holder.lock().await;
+				let req = if let Some(session_id) = session_holder_guard.as_ref() {
+					req.header("mcp-session-id", session_id)
+				} else {
+					// TODO: Make sure to do a warn if not initialize event (string loose match)
+					req
+				};
+				drop(session_holder_guard);
+
 				// --
 				let Ok(mut res) = req.send().await else {
 					error!("Cannot build MCP SEND REQUEST");
 					continue;
 				};
 
-				debug!("MCP Response headers: {:?}", res.headers());
+				// TODO: Probably do it only on InitializeResult
+				// TODO: For all other request trace error if session_holder is None
+				if let Some(session_id) = res.headers().get("mcp-session-id").and_then(|v| v.to_str().ok()) {
+					let mut session_holder_guard = session_id_holder.lock().await;
+					*session_holder_guard = Some(session_id.to_string());
+				}
+
+				// FIXME: Need handle cases when no content-type or content-type is application/json
+				if !res.headers().contains_key("content-type") {
+					let headers = res.headers().clone();
+					let txt = res.text().await.unwrap_or_else(|_| "NO CONTENT".to_string());
+					error!("NO CONTENT TYPE.\nHeaders: {:?}\nBody:\n{}", headers, txt);
+					continue;
+				}
 
 				let mut stream = res.bytes_stream().eventsource();
 
@@ -77,7 +97,7 @@ impl ClientHttpTransport {
 impl From<ClientHttpTransportConfig> for ClientHttpTransport {
 	fn from(config: ClientHttpTransportConfig) -> Self {
 		let config = Arc::new(config);
-		Self { config, inner: None }
+		Self { config }
 	}
 }
 

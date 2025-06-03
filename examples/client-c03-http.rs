@@ -10,7 +10,7 @@ use agentic::mcp::client::{Client, ClientHttpTransportConfig, ClientStdioTranspo
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	tracing_subscriber::fmt()
-		.with_max_level(tracing::Level::WARN) // ERROR, WARN
+		.with_max_level(tracing::Level::WARN) // DEBUG, WARN
 		.without_time()
 		.init();
 
@@ -24,17 +24,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	// -- Connect
 	let res = client.connect(transport).await?;
 
-	println!("MCP Connect Response:\n{res:?}");
+	// -- List tools
+	let res = client.send_request(ListToolsParams::default()).await?;
 
-	// // -- List tools
-	// let res = client.send_request(ListToolsParams::default()).await?;
+	let list_tools = res.result;
 
-	// let list_tools = res.result;
-
-	// // -- Print tool names
-	// for tool in list_tools.tools.iter() {
-	// 	println!("{}", tool.name);
-	// }
+	// -- Print tool names
+	for tool in list_tools.tools.iter() {
+		println!("{}", tool.name);
+	}
 
 	Ok(())
 }
