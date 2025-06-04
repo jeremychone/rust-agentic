@@ -52,6 +52,7 @@ __pycache__/
 _*
 # '_' in src dir, ok.
 !**/src/**/_*
+!**/tests/**/_*
 
 # Allows .env (make sure only dev info) 
 # !.env # Commented by default

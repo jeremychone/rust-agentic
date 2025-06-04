@@ -132,6 +132,17 @@ impl MessageContent {
 	}
 }
 
+/// Getters
+impl MessageContent {
+	pub fn as_text(&self) -> Option<&str> {
+		if let Self::Text { text, .. } = self {
+			Some(text.as_str())
+		} else {
+			None
+		}
+	}
+}
+
 /// Describes an argument that a prompt can accept.
 ///
 /// TS Ref: `PromptArgument`
