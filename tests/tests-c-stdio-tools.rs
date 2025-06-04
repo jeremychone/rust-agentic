@@ -47,31 +47,3 @@ async fn test_c_stdio_tools_add() -> Result<()> {
 
 	Ok(())
 }
-
-// #[tokio::test]
-async fn test_c_stdio_tools_sample_llm() -> Result<()> {
-	// -- Fixtures & Setup
-	let client = support::mock_new_stdio_client_and_connect().await?;
-
-	// -- Exec
-	let res = client.send_request(ListToolsParams::default()).await?;
-
-	// -- Check
-	let tools = res.result.tools;
-	for tool in tools {
-		if tool.name == "sampleLLM" {
-			let tool_json = serde_json::to_string_pretty(&tool)?;
-			// println!("->> {tool_json}");
-		}
-	}
-
-	// -- XP
-	let params = CallToolParams::new("sampleLLM")
-		//
-		.append_argument("prompt", "Why is the sky red?");
-	let res: agentic::mcp::CallToolResult = client.send_request(params).await?.result;
-	let pretty = serde_json::to_string_pretty(&res)?;
-	println!("\n\n->> {pretty}");
-
-	Ok(())
-}
