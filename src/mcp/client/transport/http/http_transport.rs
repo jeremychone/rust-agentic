@@ -1,9 +1,9 @@
-use crate::mcp::client::transport::Result;
 use crate::mcp::client::transport::{ClientHttpTransportConfig, TransportTrx};
+use crate::mcp::client::transport::{CommTx, Result};
 use eventsource_stream::Eventsource;
 use futures::stream::StreamExt;
-use reqwest::ResponseBuilderExt;
 use reqwest::header::HeaderValue;
+use reqwest::{Response, ResponseBuilderExt};
 use std::ops::Index;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -67,30 +67,30 @@ impl ClientHttpTransport {
 				}
 
 				// FIXME: Need handle cases when no content-type or content-type is application/json
-				if !res.headers().contains_key("content-type") {
-					let headers = res.headers().clone();
-					let txt = res.text().await.unwrap_or_else(|_| "NO CONTENT".to_string());
-					error!("NO CONTENT TYPE.\nHeaders: {:?}\nBody:\n{}", headers, txt);
-					continue;
-				}
-
-				let mut stream = res.bytes_stream().eventsource();
-
-				while let Some(event) = stream.next().await {
-					match event {
-						Ok(event) => {
-							//
-							debug!(
-								"mcp sse event received: id={},type={},data_len={}",
-								event.id,
-								event.event,
-								event.data.len()
-							);
-							if let Err(err) = out_tx.send(event.data).await {
-								error!(%err, "while sending txt to out_txt.");
+				let res_content_type = res.headers().get("content-type").and_then(|v| v.to_str().ok());
+				match res_content_type {
+					// -- When sse, we treat it as such
+					Some("text/event-stream") => {
+						process_sse_event(res, &out_tx).await;
+					}
+					// -- When application/json or no contentype treat it as the json-rpc response
+					// NOTE: None because sometime servers (like the everything) seems
+					//       to be sending json-rpc error with not content type (but json)
+					Some("application/json") | None => {
+						let txt = match res.text().await {
+							Ok(txt) => txt,
+							Err(err) => {
+								error!("MCP Response fail to read body - {err}");
+								continue;
 							}
+						};
+						if let Err(err) = out_tx.send(txt).await {
+							error!(%err, "while sending txt to out_txt.");
+							continue;
 						}
-						Err(e) => error!("stream event error occured: {}", e),
+					}
+					Some(other) => {
+						error!("MCP Server responded with non supporter content type {other}.");
 					}
 				}
 			}
@@ -99,6 +99,33 @@ impl ClientHttpTransport {
 		Ok(())
 	}
 }
+
+// region:    --- Support
+
+async fn process_sse_event(res: Response, out_tx: &CommTx) -> Result<()> {
+	let mut stream = res.bytes_stream().eventsource();
+
+	while let Some(event) = stream.next().await {
+		match event {
+			Ok(event) => {
+				//
+				debug!(
+					"mcp sse event received: id={},type={},data_len={}",
+					event.id,
+					event.event,
+					event.data.len()
+				);
+				if let Err(err) = out_tx.send(event.data).await {
+					error!(%err, "while sending txt to out_txt.");
+				}
+			}
+			Err(e) => error!("stream event error occured: {}", e),
+		}
+	}
+
+	Ok(())
+}
+// endregion: --- Support
 
 // region:    --- Froms
 

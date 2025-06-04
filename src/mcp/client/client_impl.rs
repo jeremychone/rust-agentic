@@ -16,6 +16,7 @@ use std::sync::Arc;
 use tokio::sync::oneshot;
 use tracing::debug;
 use tracing::error;
+use tracing::info;
 use tracing::warn;
 
 type OneShotRes = oneshot::Sender<McpMessage>;
@@ -212,7 +213,7 @@ impl Client {
 				match err_rx.recv().await {
 					Ok(msg) => warn!(io_err = %msg,"io_err"),
 					Err(e) => {
-						warn!(%e, "err_rx error");
+						info!(%e, "err_rx dropped not needed");
 						break;
 					}
 				}
