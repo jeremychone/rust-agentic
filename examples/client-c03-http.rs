@@ -16,13 +16,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 	// -- Create MCP Client
 	let mut client = Client::new("Demo Client", "0.1.0");
-	let transport = ClientHttpTransportConfig::new(
+	let transport_config = ClientHttpTransportConfig::new(
 		// cmd and args (this MCP Server requires nodejs to be installed)
 		"http://localhost:3001/mcp",
 	);
 
 	// -- Connect
-	let res = client.connect(transport).await?;
+	let res = client.connect(transport_config).await?;
 
 	// -- List tools
 	let res = client.send_request(ListToolsParams::default()).await?;
