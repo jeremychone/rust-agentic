@@ -28,34 +28,42 @@ impl ClientHttpTransport {
 
 		tokio::spawn(async move {
 			while let Ok(txt) = in_rx.recv().await {
-				let header = HeaderValue::from_static("application/json");
 				// TODO: remove the txt.clone
 				let req = req_client
 					.post(&config.url)
-					.header(reqwest::header::CONTENT_TYPE, header)
+					.header(reqwest::header::CONTENT_TYPE, "application/json")
 					.header(reqwest::header::ACCEPT, "text/event-stream, application/json")
-					.body(txt.clone());
+					.body(txt);
 
-				let session_holder_guard = session_id_holder.lock().await;
-				let req = if let Some(session_id) = session_holder_guard.as_ref() {
-					req.header("mcp-session-id", session_id)
+				let mut session_holder_guard = session_id_holder.lock().await;
+				let (req, holder_sid) = if let Some(session_id) = session_holder_guard.as_ref() {
+					let req = req.header("mcp-session-id", session_id);
+					(req, Some(session_id))
 				} else {
 					// TODO: Make sure to do a warn if not initialize event (string loose match)
-					req
+					(req, None)
 				};
-				drop(session_holder_guard);
+				// drop(session_holder_guard);
 
-				// --
+				// -- Send Request
 				let Ok(mut res) = req.send().await else {
 					error!("Cannot build MCP SEND REQUEST");
 					continue;
 				};
 
-				// TODO: Probably do it only on InitializeResult
-				// TODO: For all other request trace error if session_holder is None
-				if let Some(session_id) = res.headers().get("mcp-session-id").and_then(|v| v.to_str().ok()) {
-					let mut session_holder_guard = session_id_holder.lock().await;
-					*session_holder_guard = Some(session_id.to_string());
+				// -- Set and Check mcp-session-id
+				let res_session_id = res.headers().get("mcp-session-id").and_then(|v| v.to_str().ok());
+				match (holder_sid, res_session_id) {
+					(None, Some(session_id)) => {
+						*session_holder_guard = Some(session_id.to_string());
+					}
+					(Some(holder_sid), Some(session_id)) => {
+						if holder_sid != session_id {
+							error!("MCP Server did not send matching session id. Abort");
+							continue;
+						}
+					}
+					_ => (),
 				}
 
 				// FIXME: Need handle cases when no content-type or content-type is application/json
