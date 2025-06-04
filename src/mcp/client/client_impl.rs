@@ -121,7 +121,7 @@ impl Client {
 		}
 	}
 
-	pub async fn send_request<REQ, P>(&self, req: REQ) -> crate::mcp::Result<McpResponse<REQ::McpResult>>
+	pub async fn send_request<REQ, P>(&self, req: REQ) -> Result<McpResponse<REQ::McpResult>>
 	where
 		REQ: Into<McpRequest<P>>,
 		REQ: IntoMcpRequest<P>,
@@ -139,6 +139,20 @@ impl Client {
 		let result = serde_json::from_value::<REQ::McpResult>(result).map_err(Error::custom_from_err)?;
 
 		Ok(McpResponse { id, result })
+	}
+
+	pub async fn send_response<R>(&self, mcp_response: McpResponse<R>) -> Result<()>
+	where
+		R: Serialize,
+	{
+		let in_tx = self.try_in_tx()?;
+		let payload = serde_json::to_string(&mcp_response).map_err(Error::custom_from_err)?;
+		if let Err(err) = in_tx.send(payload).await {
+			error!("Fail to send in_tx send_response_raw. Cause {err}");
+			return Err(err.into());
+		};
+
+		Ok(())
 	}
 }
 
@@ -162,8 +176,7 @@ impl Client {
 	}
 }
 
-// region:    --- Runners
-
+/// Runners
 impl Client {
 	fn run_out_rx(&self, out_rx: CommRx) -> Result<()> {
 		let res_queue = self.inner.res_queue.clone();
@@ -175,6 +188,8 @@ impl Client {
 							error!(message = %msg, "Parsing received McpMessage");
 							continue;
 						};
+
+						// FIXME: Need to fix when it's a McpRequest from mcp server (e.g., sampling)
 						match mcp_message.rpc_id() {
 							Some(rpc_id) => {
 								debug!(rpc_id = %rpc_id, "Received RPC Response");
@@ -223,8 +238,6 @@ impl Client {
 		Ok(())
 	}
 }
-
-// endregion: --- Runners
 
 // region:    --- Support
 

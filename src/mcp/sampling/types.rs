@@ -196,6 +196,28 @@ pub enum SamplingContent {
 	Audio(AudioContent),
 }
 
+// region:    --- Froms
+
+impl From<String> for SamplingContent {
+	fn from(text: String) -> Self {
+		Self::Text(TextContent::new(text))
+	}
+}
+
+impl From<&String> for SamplingContent {
+	fn from(text: &String) -> Self {
+		Self::Text(TextContent::new(text.to_string()))
+	}
+}
+
+impl From<&str> for SamplingContent {
+	fn from(text: &str) -> Self {
+		Self::Text(TextContent::new(text.to_string()))
+	}
+}
+
+// endregion: --- Froms
+
 /// Builders / Constructors (for convenience, often direct construction is fine)
 impl SamplingContent {
 	pub fn new_text(text: impl Into<String>) -> Self {
@@ -239,4 +261,3 @@ impl SamplingMessage {
 
 	// No specific 'with_' methods needed as fields are public and required at construction.
 }
-

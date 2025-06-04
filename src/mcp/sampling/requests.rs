@@ -130,7 +130,12 @@ pub struct CreateMessageResult {
 
 /// Builders
 impl CreateMessageResult {
-	pub fn new(role: Role, content: SamplingContent, model: impl Into<String>) -> Self {
+	pub fn new_assistant(content: impl Into<SamplingContent>, model: impl Into<String>) -> Self {
+		Self::new(Role::Assistant, content, model)
+	}
+
+	pub fn new(role: Role, content: impl Into<SamplingContent>, model: impl Into<String>) -> Self {
+		let content = content.into();
 		Self {
 			meta: None,
 			role,
