@@ -10,7 +10,7 @@ use agentic::mcp::client::{Client, ClientHttpTransportConfig, ClientStdioTranspo
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	tracing_subscriber::fmt()
-		.with_max_level(tracing::Level::WARN) // DEBUG, WARN
+		.with_max_level(tracing::Level::WARN)
 		.without_time()
 		.init();
 

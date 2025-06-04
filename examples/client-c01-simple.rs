@@ -8,7 +8,7 @@ use agentic::mcp::client::{Client, ClientStdioTransportConfig};
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	tracing_subscriber::fmt()
-		.with_max_level(tracing::Level::WARN) // ERROR, WARN
+		.with_max_level(tracing::Level::WARN)
 		.without_time()
 		.init();
 
