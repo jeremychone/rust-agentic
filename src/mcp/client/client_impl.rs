@@ -6,6 +6,7 @@ use crate::mcp::McpMessage;
 use crate::mcp::McpRequest;
 use crate::mcp::McpResponse;
 use crate::mcp::client::IntoClientTransport;
+use crate::mcp::client::sampling_handler::IntoSamplingHandlerAsyncFn;
 use crate::mcp::client::transport::new_trx_pair;
 use crate::mcp::client::transport::{ClientTransport, ClientTrx, CommRx, CommTx};
 use crate::mcp::support::truncate;
@@ -20,6 +21,7 @@ use tracing::info;
 use tracing::warn;
 
 type OneShotRes = oneshot::Sender<McpMessage>;
+type ResQueue = Arc<DashMap<RpcId, OneShotRes>>;
 
 #[derive(Clone)]
 pub struct Client {
@@ -30,7 +32,7 @@ pub struct Client {
 struct ClientInner {
 	name: String,
 	version: String,
-	res_queue: Arc<DashMap<RpcId, OneShotRes>>,
+	res_queue: ResQueue,
 }
 
 struct CommInner {
@@ -167,6 +169,14 @@ impl Client {
 	}
 }
 
+/// Handlers
+impl Client {
+	pub fn register_sampling_handler(&mut self, sampling_handler: impl IntoSamplingHandlerAsyncFn) {
+		//
+		todo!("register_sampling_handler is not implemented yet")
+	}
+}
+
 /// Private Accessors
 impl Client {
 	fn try_in_tx(&self) -> Result<&CommTx> {
@@ -188,27 +198,20 @@ impl Client {
 							error!(message = %msg, "Parsing received McpMessage");
 							continue;
 						};
+						match mcp_message {
+							McpMessage::Request(mcp_request) => {
+								//
 
-						// FIXME: Need to fix when it's a McpRequest from mcp server (e.g., sampling)
-						match mcp_message.rpc_id() {
-							Some(rpc_id) => {
-								debug!(rpc_id = %rpc_id, "Received RPC Response");
-								match res_queue.remove(rpc_id) {
-									Some((rpc_id, one_shot)) => match one_shot.send(mcp_message) {
-										Ok(_) => (),
-										Err(_) => error!(rpc_id = %rpc_id, "Cannot send one_shot"),
-									},
-									None => {
-										let payload = always_to_string(&mcp_message);
-										error!(rpc_id = %rpc_id, payload_excerpt = %truncate(&payload, 256), "No matching request that id")
-									}
-								}
+								let pretty = serde_json::to_string_pretty(&mcp_request)
+									.unwrap_or_else(|_| "Cannot serialize".to_string());
+								println!("\n\n->> {}\n\n", pretty);
+								warn!("MCP Request in out_rx not supported yet")
 							}
-							None => {
-								// no id, just print for now
-								let payload = always_to_string(&mcp_message);
-								warn!(payload = %payload, "No rpc_id, should be a notifications. Not processed for now (will be in future release)");
+							McpMessage::Notification(mcp_notification) => {
+								warn!("MCP Notification in out_rx not supported yet")
 							}
+							McpMessage::Response(mcp_response) => process_mcp_response(mcp_response, &res_queue),
+							McpMessage::Error(mcp_error) => warn!("MCP Error in out_rx not supported yet"),
 						}
 					}
 					Err(e) => {
@@ -240,6 +243,24 @@ impl Client {
 }
 
 // region:    --- Support
+
+fn process_mcp_response(mcp_res: McpResponse, res_queue: &ResQueue) {
+	let rpc_id = mcp_res.id.clone();
+
+	// FIXME: Need to fix when it's a McpRequest from mcp server (e.g., sampling)
+	debug!(rpc_id = %rpc_id, "Received RPC Response");
+
+	match res_queue.remove(&rpc_id) {
+		Some((rpc_id, one_shot)) => match one_shot.send(mcp_res.into()) {
+			Ok(_) => (),
+			Err(_) => error!(rpc_id = %rpc_id, "Cannot send one_shot"),
+		},
+		None => {
+			let payload = always_to_string(&mcp_res);
+			error!(rpc_id = %rpc_id, payload_excerpt = %truncate(&payload, 256), "No matching request that id")
+		}
+	}
+}
 
 fn always_to_string<T: Serialize + std::fmt::Debug>(val: &T) -> String {
 	// Try to serialize using a reference to val, so we don't move it

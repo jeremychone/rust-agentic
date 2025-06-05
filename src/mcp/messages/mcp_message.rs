@@ -1,14 +1,19 @@
 use crate::RpcId;
 use crate::mcp::{Error, McpError, McpNotification, McpRequest, McpResponse, Result};
+use derive_more::From;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 
 /// Represents any valid MCP message (Request, Notification, Response, or Error).
-#[derive(Debug, Clone, strum::IntoStaticStr)]
+#[derive(Debug, Clone, From, strum::IntoStaticStr)]
 pub enum McpMessage {
+	#[from]
 	Request(McpRequest<Value>),
+	#[from]
 	Notification(McpNotification<Value>),
+	#[from]
 	Response(McpResponse<Value>),
+	#[from]
 	Error(McpError),
 }
 
