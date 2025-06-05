@@ -1,11 +1,14 @@
 use crate::RpcId;
+use crate::mcp::CreateMessageParams;
 use crate::mcp::InitializeParams;
 use crate::mcp::InitializeResult;
 use crate::mcp::IntoMcpRequest;
 use crate::mcp::McpMessage;
 use crate::mcp::McpRequest;
 use crate::mcp::McpResponse;
+use crate::mcp::SamplingMessage;
 use crate::mcp::client::IntoClientTransport;
+use crate::mcp::client::SamplingHandlerAsyncFn;
 use crate::mcp::client::sampling_handler::IntoSamplingHandlerAsyncFn;
 use crate::mcp::client::transport::new_trx_pair;
 use crate::mcp::client::transport::{ClientTransport, ClientTrx, CommRx, CommTx};
@@ -27,6 +30,7 @@ type ResQueue = Arc<DashMap<RpcId, OneShotRes>>;
 pub struct Client {
 	inner: Arc<ClientInner>,
 	comm_inner: Option<Arc<CommInner>>,
+	sampling_handler: Option<Arc<Box<dyn SamplingHandlerAsyncFn + 'static>>>,
 }
 
 struct ClientInner {
@@ -55,6 +59,7 @@ impl Client {
 			inner: info_inner.into(),
 
 			comm_inner: None,
+			sampling_handler: None,
 		}
 	}
 
@@ -86,6 +91,7 @@ impl Client {
 		self.comm_inner = Some(CommInner { transport, in_tx }.into());
 
 		self.run_out_rx(out_rx)?;
+		// self.run_s2c_req_rx(server_req_rx)?;
 		self.run_err_rx(err_rx)?;
 
 		// send the initialize
@@ -172,8 +178,16 @@ impl Client {
 /// Handlers
 impl Client {
 	pub fn register_sampling_handler(&mut self, sampling_handler: impl IntoSamplingHandlerAsyncFn) {
-		//
-		todo!("register_sampling_handler is not implemented yet")
+		let sampling_handler = sampling_handler.into_sampling_handler();
+		self.sampling_handler = Some(sampling_handler);
+	}
+
+	pub async fn exec_sampling_handler(
+		&self,
+		create_message_req: McpRequest<CreateMessageParams>,
+	) -> Result<McpResponse<SamplingMessage>> {
+		// FIXME: do the work
+		Err("client::exec_sampling_handler not implemented".into())
 	}
 }
 
@@ -199,18 +213,38 @@ impl Client {
 							continue;
 						};
 						match mcp_message {
+							McpMessage::Response(mcp_response) => process_mcp_response(mcp_response, &res_queue),
 							McpMessage::Request(mcp_request) => {
-								//
-
+								// NOTE: Temp implementation
+								// (FINAL IMPL WILL NOT BLOCK.SEND DO SAMPLING QUEUE)
 								let pretty = serde_json::to_string_pretty(&mcp_request)
 									.unwrap_or_else(|_| "Cannot serialize".to_string());
-								println!("\n\n->> {}\n\n", pretty);
+
+								let Some(sampling_request_params) = mcp_request.params else {
+									continue;
+								};
+								let Ok(sampling_request_params) =
+									serde_json::from_value::<CreateMessageParams>(sampling_request_params)
+								else {
+									continue;
+								};
+
+								let create_message_req = McpRequest {
+									id: mcp_request.id,
+									method: mcp_request.method,
+									params: Some(sampling_request_params),
+								};
+
+								// TODO: pseudo code:
+								// sampling_tx.send(create_message_req)
+								// let _for_dev = self.exec_sampling_handler(create_message_req).await;
+
 								warn!("MCP Request in out_rx not supported yet")
 							}
 							McpMessage::Notification(mcp_notification) => {
 								warn!("MCP Notification in out_rx not supported yet")
 							}
-							McpMessage::Response(mcp_response) => process_mcp_response(mcp_response, &res_queue),
+
 							McpMessage::Error(mcp_error) => warn!("MCP Error in out_rx not supported yet"),
 						}
 					}
