@@ -2,8 +2,8 @@
 //!
 //! With demo MCP Server: https://github.com/modelcontextprotocol/servers/tree/main/src/everything
 
-use agentic::mcp::CallToolParams;
 use agentic::mcp::client::{Client, ClientStdioTransportConfig};
+use agentic::mcp::{CallToolParams, GetPromptParams};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -29,7 +29,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let params = CallToolParams::new("echo").append_argument("message", "Hello Live Coding");
 	// Call
 	let res = client.send_request(params).await?;
-	println!("Calling echo tool:\n{res:#?}");
+	println!("\nCalling echo tool:\n{res:#?}");
 
 	// -- Call add
 	// Build the params
@@ -38,7 +38,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 		.append_argument("a", 1)
 		.append_argument("b", 2.5);
 	let res = client.send_request(params).await?;
-	println!("Calling add tool:\n{res:#?}");
+	println!("\nCalling add tool:\n{res:#?}");
+
+	// -- Call prompt
+	// Build the params
+	let params = GetPromptParams::new("simple_prompt");
+	let res = client.send_request(params).await?;
+	println!("\nCalling get_prompt:\n{res:#?}");
 
 	Ok(())
 }
