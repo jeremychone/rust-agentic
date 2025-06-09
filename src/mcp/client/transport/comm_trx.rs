@@ -1,5 +1,6 @@
 use super::Result;
 use flume::{Receiver, Sender};
+use tracing::error;
 
 pub struct ClientTrx {
 	pub c2s_tx: CommTx,
@@ -33,14 +34,20 @@ pub fn new_trx_pair() -> (ClientTrx, TransportTrx) {
 
 // region:    --- CommTx
 
+#[derive(Clone)]
 pub struct CommTx {
 	tx: Sender<String>,
 }
 
 impl CommTx {
 	pub async fn send(&self, item: impl Into<String>) -> Result<()> {
-		self.tx.send_async(item.into()).await?;
-		Ok(())
+		match self.tx.send_async(item.into()).await {
+			Ok(_) => Ok(()),
+			Err(err) => {
+				error!("Cannot send to CommTx");
+				Err(err.into())
+			}
+		}
 	}
 }
 

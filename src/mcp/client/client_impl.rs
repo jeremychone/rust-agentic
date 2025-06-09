@@ -44,7 +44,7 @@ struct ClientInner {
 struct CommInner {
 	#[allow(unused)]
 	transport: ClientTransport,
-	in_tx: CommTx,
+	c2s_tx: CommTx,
 }
 
 /// Constructors & Connect
@@ -95,13 +95,7 @@ impl Client {
 			s2c_rx,
 			s2c_aux_rx,
 		} = client_trx;
-		self.comm_inner = Some(
-			CommInner {
-				transport,
-				in_tx: c2s_tx,
-			}
-			.into(),
-		);
+		self.comm_inner = Some(CommInner { transport, c2s_tx }.into());
 
 		// -- Run Typed MCP Requests
 		let (s2c_mcp_requests_tx, s2c_mcp_requests_rx) = flume::unbounded::<McpRequest>();
@@ -138,7 +132,7 @@ impl Client {
 		let method = &req.method;
 		debug!(rpc_id = %rpc_id, method = %method, "Sending RPC Request");
 		let msg = serde_json::to_string(&req).map_err(Error::custom_from_err)?;
-		self.try_in_tx()?.send(msg).await?;
+		self.try_c2s_tx()?.send(msg).await?;
 
 		// -- Wait for response
 		match rx.await {
@@ -171,7 +165,7 @@ impl Client {
 	where
 		R: Serialize,
 	{
-		let in_tx = self.try_in_tx()?;
+		let in_tx = self.try_c2s_tx()?;
 		let payload = serde_json::to_string(&mcp_response).map_err(Error::custom_from_err)?;
 		if let Err(err) = in_tx.send(payload).await {
 			error!("Fail to send in_tx send_response_raw. Cause {err}");
@@ -211,9 +205,9 @@ impl Client {
 
 /// Private Accessors
 impl Client {
-	fn try_in_tx(&self) -> Result<&CommTx> {
+	fn try_c2s_tx(&self) -> Result<&CommTx> {
 		let trans_inner = self.comm_inner.as_ref().ok_or("Client not connected (no transport inner")?;
-		let in_tx = &trans_inner.in_tx;
+		let in_tx = &trans_inner.c2s_tx;
 		Ok(in_tx)
 	}
 
@@ -271,37 +265,53 @@ impl Client {
 	/// TODO: For now, only support the sampling_handler (no routing)
 	fn run_server_requests(&self, s2c_mcp_request_rx: flume::Receiver<McpRequest>) -> Result<()> {
 		let sampling_handler = self.sampling_handler.clone();
+		let c2s_tx = self.try_c2s_tx()?.clone();
 
 		tokio::spawn(async move {
 			loop {
 				match s2c_mcp_request_rx.recv_async().await {
 					Ok(mcp_request) => {
-						// TODO: use mutex to get the latest sampling_handler
+						// TODO: Today assuming register sampling handler before connect.
+						//       Otherwise, need to use mutex to get the latest sampling_handler
 						let Some(sampling_handler) = sampling_handler.as_ref() else {
 							error!("This client does not have any sampling. Cannot process event");
 							continue;
 						};
-						let pretty = serde_json::to_string_pretty(&mcp_request)
-							.unwrap_or_else(|_| "Cannot serialize".to_string());
 
-						println!("->> !!!!! {pretty}");
+						// NOTE - Today no routing, assuming server request can only be Sampling Request
 
 						let Some(sampling_request_params) = mcp_request.params else {
+							error!("McpRequest is not Sampling request. No params");
 							continue;
 						};
+
 						let Ok(sampling_request_params) =
 							serde_json::from_value::<CreateMessageParams>(sampling_request_params)
 						else {
+							error!("McpRequest is not a Sampling request. Params fail parsing as CreateMessageParams");
 							continue;
 						};
 
-						let create_message_req = McpRequest {
-							id: mcp_request.id,
-							method: mcp_request.method,
-							params: Some(sampling_request_params),
+						match sampling_handler.exec_fn(sampling_request_params).await {
+							Ok(res) => {
+								let res = McpResponse {
+									id: mcp_request.id,
+									result: res,
+								};
+								let payload = match serde_json::to_string(&res) {
+									Ok(res) => res,
+									Err(err) => {
+										error!("While serializing McpResponse for c2s. {res:?}");
+										continue;
+									}
+								};
+								c2s_tx.send(payload).await;
+							}
+							Err(err) => {
+								//
+								error!("Error processing sampling. Cause: {err}")
+							}
 						};
-
-						println!("->> ALL OK");
 					}
 					Err(err) => error!("Cannot rx from s2c_mcp_request_rx. Cause: {err}"),
 				}

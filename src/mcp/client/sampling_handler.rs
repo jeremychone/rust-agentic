@@ -1,4 +1,4 @@
-use crate::mcp::{CreateMessageParams, Result, SamplingMessage};
+use crate::mcp::{CreateMessageParams, CreateMessageResult, Result};
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
@@ -7,7 +7,7 @@ pub trait SamplingHandlerAsyncFn: Send + Sync {
 	fn exec_fn(
 		&self,
 		create_message_params: CreateMessageParams,
-	) -> Pin<Box<dyn Future<Output = Result<SamplingMessage>> + Send>>;
+	) -> Pin<Box<dyn Future<Output = Result<CreateMessageResult>> + Send>>;
 }
 
 impl std::fmt::Debug for dyn SamplingHandlerAsyncFn {
@@ -21,7 +21,7 @@ impl std::fmt::Debug for dyn SamplingHandlerAsyncFn {
 struct GenericFnAdapter<FN, FUT>
 where
 	FN: FnOnce(CreateMessageParams) -> FUT + Send + Sync + Clone + 'static,
-	FUT: Future<Output = Result<SamplingMessage>> + Send + 'static,
+	FUT: Future<Output = Result<CreateMessageResult>> + Send + 'static,
 {
 	f: FN,
 	_phantom: std::marker::PhantomData<fn() -> FUT>,
@@ -30,12 +30,12 @@ where
 impl<FN, FUT> SamplingHandlerAsyncFn for GenericFnAdapter<FN, FUT>
 where
 	FN: FnOnce(CreateMessageParams) -> FUT + Send + Sync + Clone + 'static,
-	FUT: Future<Output = Result<SamplingMessage>> + Send + 'static,
+	FUT: Future<Output = Result<CreateMessageResult>> + Send + 'static,
 {
 	fn exec_fn(
 		&self,
 		create_message_params: CreateMessageParams,
-	) -> Pin<Box<dyn Future<Output = Result<SamplingMessage>> + Send>> {
+	) -> Pin<Box<dyn Future<Output = Result<CreateMessageResult>> + Send>> {
 		Box::pin((self.f.clone())(create_message_params))
 	}
 }
@@ -57,7 +57,7 @@ impl IntoSamplingHandlerAsyncFn for Arc<Box<dyn SamplingHandlerAsyncFn>> {
 impl<F, Fut> IntoSamplingHandlerAsyncFn for F
 where
 	F: FnOnce(CreateMessageParams) -> Fut + Send + Sync + Clone + 'static,
-	Fut: Future<Output = Result<SamplingMessage>> + Send + 'static,
+	Fut: Future<Output = Result<CreateMessageResult>> + Send + 'static,
 {
 	fn into_sampling_handler(self) -> Arc<Box<dyn SamplingHandlerAsyncFn>> {
 		let adapter = GenericFnAdapter {

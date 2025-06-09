@@ -18,11 +18,13 @@ async fn main() -> Result<()> {
 	// -- Register the sampling
 	let some_stuff = 123;
 	client.register_sampling_handler(
-		async move |_params: CreateMessageParams| -> agentic::mcp::Result<SamplingMessage> {
-			println!("==== !!!! Async closure sampling handler called. {some_stuff}");
-			Err(agentic::mcp::Error::custom(
-				"async closure - actual sampling logic not implemented yet",
-			))
+		async move |_params: CreateMessageParams| -> agentic::mcp::Result<CreateMessageResult> {
+			let message_result = CreateMessageResult::new_assistant(
+				//
+				"The sky appears red, especially at sunrise or sunset, because sunlight passes through more of the Earth's atmosphere, scattering shorter blue wavelengths and allowing longer red wavelengths to dominate.",
+				"mock-model-xp",
+			);
+			Ok(message_result)
 		},
 	);
 
@@ -39,40 +41,15 @@ async fn main() -> Result<()> {
 	let client = client;
 
 	let client_for_req = client.clone();
-	tokio::spawn(async move {
-		// -- Trigger the sampling
-		let params = CallToolParams::new("sampleLLM").append_argument("prompt", "Why is the sky red?");
+	// -- Trigger the sampling
+	let params = CallToolParams::new("sampleLLM").append_argument("prompt", "Why is the sky red?");
 
-		println!("\n\nBEFORE\n\n");
-		let res = match client_for_req.send_request(params).await {
-			Ok(res) => res,
-			Err(err) => {
-				println!("ERROR when sending sampleLLM - {err}");
-				return;
-			}
-		};
-		println!("\n\nAFTER");
+	let res = client_for_req.send_request(params).await?;
 
-		let pretty = serde_json::to_string_pretty(&res.result.content).unwrap_or_else(|_| "FAIL CONTENT".to_string());
-		println!("Response:\n{pretty}");
-	});
+	let res = serde_json::to_string_pretty(&res)?;
+	println!("Tool response (after sampling):\n{res}");
 
 	// sleep 1 sec
-	tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-
-	// -- Send mock sample result
-	let message_result = CreateMessageResult::new_assistant(
-		//
-		"The sky appears red, especially at sunrise or sunset, because sunlight passes through more of the Earth's atmosphere, scattering shorter blue wavelengths and allowing longer red wavelengths to dominate.",
-		"mock-model-xp",
-	);
-
-	let mcp_res = McpResponse {
-		id: 0.into(),
-		result: message_result,
-	};
-	client.send_response(mcp_res).await?;
-
 	tokio::time::sleep(std::time::Duration::from_secs(1)).await;
 
 	Ok(())
