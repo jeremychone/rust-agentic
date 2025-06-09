@@ -1,17 +1,9 @@
 use agentic::mcp::client::{Client, ClientStdioTransportConfig};
-use agentic::mcp::{
-	CallToolParams, CreateMessageParams, CreateMessageResult, ListToolsParams, McpRequest, McpResponse, SamplingMessage,
-};
+use agentic::mcp::{CallToolParams, CreateMessageParams, CreateMessageResult, McpResponse, SamplingMessage};
 
 type Result<T> = core::result::Result<T, Box<dyn std::error::Error>>;
 
 // doc: https://modelcontextprotocol.io/docs/concepts/sampling
-
-// // This function is no longer needed as we will use an async closure
-// async fn app_sampling_handler(mcp_sample_request: CreateMessageParams) -> agentic::mcp::Result<SamplingMessage> {
-// 	// todo!("app_sampling_handler not implemented yet")
-// 	Err(agentic::mcp::Error::custom("app_sampling_handler not implemented yet"))
-// }
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -30,9 +22,10 @@ async fn main() -> Result<()> {
 	);
 	client.connect(transport_config).await?;
 
+	let some_stuff = 123;
 	client.register_sampling_handler(
 		async move |_params: CreateMessageParams| -> agentic::mcp::Result<SamplingMessage> {
-			println!("Async closure sampling handler called.");
+			println!("Async closure sampling handler called. {some_stuff}");
 			Err(agentic::mcp::Error::custom(
 				"async closure - actual sampling logic not implemented yet",
 			))
