@@ -16,7 +16,11 @@ pub struct ClientHttpTransport {
 /// Lifecyle - start
 impl ClientHttpTransport {
 	pub(crate) async fn start(&mut self, transport_trx: TransportTrx) -> Result<()> {
-		let TransportTrx { in_rx, out_tx, err_tx } = transport_trx;
+		let TransportTrx {
+			c2s_rx: in_rx,
+			s2c_tx: out_tx,
+			s2c_aux_tx: err_tx,
+		} = transport_trx;
 
 		// TODO: probably need add cookies support
 		let req_client = reqwest::ClientBuilder::new().build()?;

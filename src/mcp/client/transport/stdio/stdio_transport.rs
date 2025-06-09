@@ -20,7 +20,11 @@ pub struct ClientStdioTransportInner {
 /// Lifecycle - start
 impl ClientStdioTransport {
 	pub(crate) async fn start(&mut self, transport_trx: TransportTrx) -> Result<()> {
-		let TransportTrx { in_rx, out_tx, err_tx } = transport_trx;
+		let TransportTrx {
+			c2s_rx,
+			s2c_tx,
+			s2c_aux_tx,
+		} = transport_trx;
 
 		// -- Build the command
 		let mut cmd = Command::new(&self.config.cmd);
@@ -52,7 +56,7 @@ impl ClientStdioTransport {
 			loop {
 				match lines.next_line().await {
 					Ok(Some(line)) => {
-						if let Err(err) = err_tx.send(line).await {
+						if let Err(err) = s2c_aux_tx.send(line).await {
 							eprintln!("ERROR while sending stderr line. Cause: {err}");
 							// Decide if the task should terminate on send error
 							break;
@@ -81,7 +85,7 @@ impl ClientStdioTransport {
 				match lines.next_line().await {
 					Ok(Some(line)) => {
 						debug!(payload_excerpt = %truncate(&line, 64), "message received");
-						if let Err(err) = out_tx.send(line).await {
+						if let Err(err) = s2c_tx.send(line).await {
 							error!(%err, "while sending stdout line");
 						}
 					}
@@ -100,7 +104,7 @@ impl ClientStdioTransport {
 		// -- STDIN
 		// listen the stdin_rx and forward them to child_stdin
 		let stdin_handle = tokio::spawn(async move {
-			while let Ok(txt) = in_rx.recv().await {
+			while let Ok(txt) = c2s_rx.recv().await {
 				if let Err(err) = send_to_stdin(&mut child_stdin, &txt).await {
 					error!("ERROR sending to stdin. Cause: {err}");
 					// Decide if the task should terminate on send error

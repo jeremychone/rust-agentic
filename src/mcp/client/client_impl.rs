@@ -36,6 +36,7 @@ pub struct Client {
 struct ClientInner {
 	name: String,
 	version: String,
+	// This is the DashMap of the rpc_id: OneShot<res>
 	res_queue: ResQueue,
 }
 
@@ -87,12 +88,21 @@ impl Client {
 		transport.start(transport_trx).await?;
 		let transport = transport; // no need to mut anymore
 
-		let ClientTrx { in_tx, out_rx, err_rx } = client_trx;
-		self.comm_inner = Some(CommInner { transport, in_tx }.into());
+		let ClientTrx {
+			c2s_tx,
+			s2c_rx,
+			s2c_aux_rx,
+		} = client_trx;
+		self.comm_inner = Some(
+			CommInner {
+				transport,
+				in_tx: c2s_tx,
+			}
+			.into(),
+		);
 
-		self.run_out_rx(out_rx)?;
-		// self.run_s2c_req_rx(server_req_rx)?;
-		self.run_err_rx(err_rx)?;
+		self.run_s2c_rx(s2c_rx)?;
+		self.run_s2c_aux_rx(s2c_aux_rx)?;
 
 		// send the initialize
 		let init_params = InitializeParams::from_client_info(self.name(), self.version());
@@ -202,11 +212,11 @@ impl Client {
 
 /// Runners
 impl Client {
-	fn run_out_rx(&self, out_rx: CommRx) -> Result<()> {
+	fn run_s2c_rx(&self, s2c_rx: CommRx) -> Result<()> {
 		let res_queue = self.inner.res_queue.clone();
 		tokio::spawn(async move {
 			loop {
-				match out_rx.recv().await {
+				match s2c_rx.recv().await {
 					Ok(msg) => {
 						let Ok(mcp_message) = serde_json::from_str::<McpMessage>(&msg) else {
 							error!(message = %msg, "Parsing received McpMessage");
@@ -259,7 +269,7 @@ impl Client {
 		Ok(())
 	}
 
-	fn run_err_rx(&self, err_rx: CommRx) -> Result<()> {
+	fn run_s2c_aux_rx(&self, err_rx: CommRx) -> Result<()> {
 		tokio::spawn(async move {
 			loop {
 				match err_rx.recv().await {

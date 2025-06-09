@@ -2,31 +2,31 @@ use super::Result;
 use flume::{Receiver, Sender};
 
 pub struct ClientTrx {
-	pub in_tx: CommTx,
-	pub out_rx: CommRx,
-	pub err_rx: CommRx,
+	pub c2s_tx: CommTx,
+	pub s2c_rx: CommRx,
+	pub s2c_aux_rx: CommRx,
 }
 
 pub struct TransportTrx {
-	pub in_rx: CommRx,
-	pub out_tx: CommTx,
-	pub err_tx: CommTx,
+	pub c2s_rx: CommRx,
+	pub s2c_tx: CommTx,
+	pub s2c_aux_tx: CommTx,
 }
 
 pub fn new_trx_pair() -> (ClientTrx, TransportTrx) {
-	let (in_tx, in_rx) = flume::unbounded::<String>();
-	let (out_tx, out_rx) = flume::unbounded::<String>();
-	let (rss_tx, rss_rx) = flume::unbounded::<String>();
+	let (c2s_tx, c2s_rx) = flume::unbounded::<String>();
+	let (s2c_tx, s2c_rx) = flume::unbounded::<String>();
+	let (s2c_aux_tx, s2c_aux_rx) = flume::unbounded::<String>();
 
 	let client_trx = ClientTrx {
-		in_tx: in_tx.into(),
-		out_rx: out_rx.into(),
-		err_rx: rss_rx.into(),
+		c2s_tx: c2s_tx.into(),
+		s2c_rx: s2c_rx.into(),
+		s2c_aux_rx: s2c_aux_rx.into(),
 	};
 	let transport_trx = TransportTrx {
-		in_rx: in_rx.into(),
-		out_tx: out_tx.into(),
-		err_tx: rss_tx.into(),
+		c2s_rx: c2s_rx.into(),
+		s2c_tx: s2c_tx.into(),
+		s2c_aux_tx: s2c_aux_tx.into(),
 	};
 	(client_trx, transport_trx)
 }
