@@ -31,6 +31,7 @@ pub struct Client {
 	inner: Arc<ClientInner>,
 	comm_inner: Option<Arc<CommInner>>,
 	sampling_handler: Option<Arc<Box<dyn SamplingHandlerAsyncFn + 'static>>>,
+	s2c_mcp_requests_tx: Option<flume::Sender<McpRequest>>,
 }
 
 struct ClientInner {
@@ -61,6 +62,7 @@ impl Client {
 
 			comm_inner: None,
 			sampling_handler: None,
+			s2c_mcp_requests_tx: None,
 		}
 	}
 
@@ -101,6 +103,12 @@ impl Client {
 			.into(),
 		);
 
+		// -- Run Typed MCP Requests
+		let (s2c_mcp_requests_tx, s2c_mcp_requests_rx) = flume::unbounded::<McpRequest>();
+		self.s2c_mcp_requests_tx = Some(s2c_mcp_requests_tx);
+		self.run_server_requests(s2c_mcp_requests_rx)?;
+
+		// -- Run Transport messages
 		self.run_s2c_rx(s2c_rx)?;
 		self.run_s2c_aux_rx(s2c_aux_rx)?;
 
@@ -208,12 +216,21 @@ impl Client {
 		let in_tx = &trans_inner.in_tx;
 		Ok(in_tx)
 	}
+
+	fn try_s2c_mcp_requests_tx(&self) -> Result<&flume::Sender<McpRequest>> {
+		let tx = self
+			.s2c_mcp_requests_tx
+			.as_ref()
+			.ok_or("Client not connected (no s2c_mcp_requests_tx)")?;
+		Ok(tx)
+	}
 }
 
 /// Runners
 impl Client {
 	fn run_s2c_rx(&self, s2c_rx: CommRx) -> Result<()> {
 		let res_queue = self.inner.res_queue.clone();
+		let try_s2c_mcp_requests_tx = self.try_s2c_mcp_requests_tx()?.clone();
 		tokio::spawn(async move {
 			loop {
 				match s2c_rx.recv().await {
@@ -225,31 +242,12 @@ impl Client {
 						match mcp_message {
 							McpMessage::Response(mcp_response) => process_mcp_response(mcp_response, &res_queue),
 							McpMessage::Request(mcp_request) => {
-								// NOTE: Temp implementation
-								// (FINAL IMPL WILL NOT BLOCK.SEND DO SAMPLING QUEUE)
-								let pretty = serde_json::to_string_pretty(&mcp_request)
-									.unwrap_or_else(|_| "Cannot serialize".to_string());
-
-								let Some(sampling_request_params) = mcp_request.params else {
-									continue;
-								};
-								let Ok(sampling_request_params) =
-									serde_json::from_value::<CreateMessageParams>(sampling_request_params)
-								else {
-									continue;
-								};
-
-								let create_message_req = McpRequest {
-									id: mcp_request.id,
-									method: mcp_request.method,
-									params: Some(sampling_request_params),
-								};
-
-								// TODO: pseudo code:
-								// sampling_tx.send(create_message_req)
-								// let _for_dev = self.exec_sampling_handler(create_message_req).await;
-
-								warn!("MCP Request in out_rx not supported yet")
+								match try_s2c_mcp_requests_tx.send_async(mcp_request).await {
+									Ok(_) => (),
+									Err(err) => {
+										error!("error sending to s2c_mcp_requests_tx. Cause: {err} ")
+									}
+								}
 							}
 							McpMessage::Notification(mcp_notification) => {
 								warn!("MCP Notification in out_rx not supported yet")
@@ -269,13 +267,57 @@ impl Client {
 		Ok(())
 	}
 
+	/// Handle the server requests
+	/// TODO: For now, only support the sampling_handler (no routing)
+	fn run_server_requests(&self, s2c_mcp_request_rx: flume::Receiver<McpRequest>) -> Result<()> {
+		let sampling_handler = self.sampling_handler.clone();
+
+		tokio::spawn(async move {
+			loop {
+				match s2c_mcp_request_rx.recv_async().await {
+					Ok(mcp_request) => {
+						// TODO: use mutex to get the latest sampling_handler
+						let Some(sampling_handler) = sampling_handler.as_ref() else {
+							error!("This client does not have any sampling. Cannot process event");
+							continue;
+						};
+						let pretty = serde_json::to_string_pretty(&mcp_request)
+							.unwrap_or_else(|_| "Cannot serialize".to_string());
+
+						println!("->> !!!!! {pretty}");
+
+						let Some(sampling_request_params) = mcp_request.params else {
+							continue;
+						};
+						let Ok(sampling_request_params) =
+							serde_json::from_value::<CreateMessageParams>(sampling_request_params)
+						else {
+							continue;
+						};
+
+						let create_message_req = McpRequest {
+							id: mcp_request.id,
+							method: mcp_request.method,
+							params: Some(sampling_request_params),
+						};
+
+						println!("->> ALL OK");
+					}
+					Err(err) => error!("Cannot rx from s2c_mcp_request_rx. Cause: {err}"),
+				}
+			}
+		});
+
+		Ok(())
+	}
+
 	fn run_s2c_aux_rx(&self, err_rx: CommRx) -> Result<()> {
 		tokio::spawn(async move {
 			loop {
 				match err_rx.recv().await {
 					Ok(msg) => warn!(io_err = %msg,"io_err"),
 					Err(e) => {
-						info!(%e, "err_rx dropped not needed");
+						info!(%e, "aux_rx dropped not needed");
 						break;
 					}
 				}

@@ -8,29 +8,33 @@ type Result<T> = core::result::Result<T, Box<dyn std::error::Error>>;
 #[tokio::main]
 async fn main() -> Result<()> {
 	tracing_subscriber::fmt()
-		.with_max_level(tracing::Level::WARN)
+		.with_max_level(tracing::Level::INFO)
 		.without_time()
 		.init();
 
 	// -- Setup
 	let mut client = Client::new("Demo Client", "0.1.0");
+
+	// -- Register the sampling
+	let some_stuff = 123;
+	client.register_sampling_handler(
+		async move |_params: CreateMessageParams| -> agentic::mcp::Result<SamplingMessage> {
+			println!("==== !!!! Async closure sampling handler called. {some_stuff}");
+			Err(agentic::mcp::Error::custom(
+				"async closure - actual sampling logic not implemented yet",
+			))
+		},
+	);
+
+	// -- Transport Config
 	let transport_config = ClientStdioTransportConfig::new(
 		// cmd and args (this MCP Server requires nodejs to be installed)
 		"npx",
 		["-y", "@modelcontextprotocol/server-everything"],
 		None,
 	);
-	client.connect(transport_config).await?;
 
-	let some_stuff = 123;
-	client.register_sampling_handler(
-		async move |_params: CreateMessageParams| -> agentic::mcp::Result<SamplingMessage> {
-			println!("Async closure sampling handler called. {some_stuff}");
-			Err(agentic::mcp::Error::custom(
-				"async closure - actual sampling logic not implemented yet",
-			))
-		},
-	);
+	client.connect(transport_config).await?;
 
 	let client = client;
 
